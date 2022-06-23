@@ -1,3 +1,58 @@
 {
-  
+  "courses": [
+    {
+      "course": "csc 111",
+      "avaliable": "f, sp",
+      "taken": true,
+      "taken-year": 1,
+      "taken-term-session": "fall"
+    },
+    {
+      "course": "engr 130",
+      "avaliable": "f",
+      "taken": true,
+      "taken-year": 1,
+      "taken-term-session": "fall"
+    },
+    {
+      "course": "engr 110",
+      "avaliable": "f",
+      "taken": true,
+      "taken-year": 1,
+      "taken-term-session": "fall"
+    },
+    {
+      "course": "math 100 or math 109",
+      "avaliable": "f, sp, su",
+      "taken": true,
+      "taken-year": 1,
+      "taken-term-session": "fall"
+    },
+    {
+      "course": "phys 110",
+      "avaliable": "f, sp",
+      "taken": true,
+      "taken-year": 1,
+      "taken-term-session": "fall"
+    },
+    {
+      "course": "csc 115",
+      "avaliable": "sp",
+      "taken": true,
+      "taken-year": 1,
+      "taken-term-session": "spring"
+    },
+    {
+      "course": "engr 120",
+      "avaliable": "sp",
+      "taken": true,
+      "taken-year": 1,
+      "taken-term-session": "spring"
+    }
+  ],
+  "notes": [
+    {
+      "on filling pre reqs, use following notation": "engr 141, math 101 or math 110, csc 115"
+    }
+  ]
 }
