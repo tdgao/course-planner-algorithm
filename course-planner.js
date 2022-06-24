@@ -1,3 +1,19 @@
+// algorithm design
+/**
+ * user has options to
+ *  - choose(force) position of which term courses are taken
+ *  - choose the term where work terms are placed
+ *  - add more courses (given prereqs and term offerings)
+ * 
+ * year schedule generator algorithm
+ *  - set all taken courses from data into specified terms
+ *  - for each term:
+ *      if course has pre reqs and offering
+ *        add course
+ * 
+ */
+
+ 
 function init(){
   // create term blocks
   cr_termBlock(20);
@@ -6,6 +22,15 @@ function init(){
   fillCourses();
 }
 init();
+
+async function fetchCourses(){
+  const res = await fetch('courses.json');
+  const courses = await res.json();
+
+  console.log(courses);
+  return courses;
+}
+fetchCourses();
 
 function fillCourses(){
   document.querySelectorAll('.term-block').forEach(term =>{
