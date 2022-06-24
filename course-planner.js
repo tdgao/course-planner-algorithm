@@ -16,6 +16,15 @@ async function init(){
 }
 init();
 
+async function fetchCourses(){
+  const res = await fetch('courses.json');
+  const courses = await res.json();
+
+  console.log(courses);
+  return courses;
+}
+fetchCourses();
+
 function fillCourses(){
   document.querySelectorAll('.term-block').forEach(term =>{
     // term 
