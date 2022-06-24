@@ -1,4 +1,13 @@
-function init(){
+async function fetchCourses() {
+  const response = await fetch('courses.json');
+  const json = await response.json();
+  console.log(json);
+}
+
+let courses = fetchCourses();
+let addedCourses = [];
+
+async function init(){
   // create term blocks
   cr_termBlock(20);
 
