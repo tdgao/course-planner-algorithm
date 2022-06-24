@@ -1,8 +1,14 @@
-async function fetchCourses() {
-  const response = await fetch('courses.json');
-  const json = await response.json();
-  console.log(json);
+class Course {
+  constructor(name, termSessionOffering, prereqs, courseTakenOn, takeCourse){
+    this.name = name;
+  }
 }
+
+const course = new Course('myName');
+console.log(course.name);
+
+
+// INITIALIZE //
 
 let courses = fetchCourses();
 let addedCourses = [];
@@ -16,6 +22,8 @@ async function init(){
 }
 init();
 
+// INITIALIZE END //
+
 async function fetchCourses(){
   const res = await fetch('courses.json');
   const courses = await res.json();
@@ -25,6 +33,7 @@ async function fetchCourses(){
 }
 fetchCourses();
 
+
 function fillCourses(){
   document.querySelectorAll('.term-block').forEach(term =>{
     // term 
@@ -32,6 +41,7 @@ function fillCourses(){
 
   });
 }
+
 
 function cr_termBlock(num_termBlocks = null){
   if (num_termBlocks === null) num_termBlocks = 1;
