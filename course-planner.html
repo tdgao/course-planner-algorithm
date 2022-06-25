@@ -33,26 +33,26 @@
             <label for="course-taken-on">Set Term to Take Course:</label>
             <br>
             <select name="course-taken-on" id="course-taken-on">
-              <option value="auto">Auto Schedule</option>
+              <option value="auto" selected>Auto Schedule</option>
               <option data-year="1" data-term-session="fall">Year 1 Fall</option>
-              <option data-year="1" data-term-session="fall">Year 1 Spring</option>
-              <option data-year="1" data-term-session="fall">Year 1 Summer</option>
+              <option data-year="1" data-term-session="spring">Year 1 Spring</option>
+              <option data-year="1" data-term-session="summer">Year 1 Summer</option>
               
               <option data-year="2" data-term-session="fall">Year 2 Fall</option>
-              <option data-year="2" data-term-session="fall">Year 2 Spring</option>
-              <option data-year="2" data-term-session="fall">Year 2 Summer</option>
+              <option data-year="2" data-term-session="spring">Year 2 Spring</option>
+              <option data-year="2" data-term-session="summer">Year 2 Summer</option>
   
               <option data-year="3" data-term-session="fall">Year 3 Fall</option>
-              <option data-year="3" data-term-session="fall">Year 3 Spring</option>
-              <option data-year="3" data-term-session="fall">Year 3 Summer</option>
+              <option data-year="3" data-term-session="spring">Year 3 Spring</option>
+              <option data-year="3" data-term-session="summer">Year 3 Summer</option>
   
               <option data-year="4" data-term-session="fall">Year 4 Fall</option>
-              <option data-year="4" data-term-session="fall">Year 4 Spring</option>
-              <option data-year="4" data-term-session="fall">Year 4 Summer</option>
+              <option data-year="4" data-term-session="spring">Year 4 Spring</option>
+              <option data-year="4" data-term-session="summer">Year 4 Summer</option>
   
               <option data-year="5" data-term-session="fall">Year 5 Fall</option>
-              <option data-year="5" data-term-session="fall">Year 5 Spring</option>
-              <option data-year="5" data-term-session="fall">Year 5 Summer</option>
+              <option data-year="5" data-term-session="spring">Year 5 Spring</option>
+              <option data-year="5" data-term-session="summer">Year 5 Summer</option>
   
             </select>
             <br>
@@ -96,13 +96,15 @@
         </form>
 
       </div>
+
+      <div class="all-courses-container"></div>
     </div>
 
     <div class="schedule-panel">
       <h1>Degree Schdule</h1>
 
-      <div class="year-title">Year 1</div>
       <div class="year-container" data-year="1">
+        <div class="year-title">Year 1</div>
         <div class="term-block-container"></div>
 
       </div>
