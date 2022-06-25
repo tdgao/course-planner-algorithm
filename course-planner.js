@@ -10,38 +10,35 @@ class Course {
 
 
 
-// INITIALIZE //
 
-let courses = fetchCourses();
-let addedCourses = [];
-
-async function init(){
+/** INITIALIZE
+ *   - creates all term blocks
+ */
+function init(){
   // create term blocks
-  cr_termBlock(17);
+  cr_termBlock(18); // 6 years of terms
 
-  // fill courses
-  fillCourses();
+
+
 }
 init();
 
-// INITIALIZE END //
-
-async function fetchCourses(){
-  const res = await fetch('courses.json');
-  const courses = await res.json();
-
-  console.log(courses);
-  return courses;
-}
-fetchCourses();
 
 
+
+
+
+/** fill courses
+ *  - fits all courses from list into schedule
+ *  - considers restrictions (pre/co reqs, session offering)
+ * 
+ *  - first, add all courses with set schedule
+ *  - then auto schedule rest: 
+ *    - if excluded from schedule, do not add
+ *    - add if (pre/co reqs completed, and session is offered)
+ */
 function fillCourses(){
-  document.querySelectorAll('.term-block').forEach(term =>{
-    // term 
 
-
-  });
 }
 
 
@@ -53,19 +50,27 @@ function fillCourses(){
 function cr_termBlock(num_termBlocks = null){
   if (num_termBlocks === null) num_termBlocks = 1;
   
-  const termBlock = document.querySelector('.term-block');
+
   
   for (let i = 0; i < num_termBlocks; i++){ 
-    const termBlockClone = termBlock.cloneNode(true);
-    setTermBlockData(termBlockClone);
+    // create new term block
+    const termBlock = document.createElement('div');
+    termBlock.classList.add('term-block')
+    setTermBlockData(termBlock);
 
     // add term block to it's year container
-    const termYear = termBlockClone.getAttribute('data-year');
-    const container = document.querySelector(`.year-container[data-year='${termYear}']`)
-    container.appendChild(termBlockClone);
+    const termYear = termBlock.getAttribute('data-year');
+    const container = document.querySelector(`.year-container[data-year='${termYear}'] .term-block-container`)
+    container.appendChild(termBlock);
   }
 }
 
+
+// term block attributes
+// data-term-session: fall, spring, summer
+// data-term-type: work, study
+// data-term-number: 1, 2, .. n (study and work terms are included in the same sequence)
+// data-max-course-num: 1, 2 .. n (maximum number of courses allowed in term)
 
 function setTermBlockData(termBlock){
   const termNumber = parseInt(document.querySelectorAll('.term-block').length);
