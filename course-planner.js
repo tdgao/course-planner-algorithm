@@ -1,15 +1,25 @@
 class Course {
   constructor(form){
-    console.log(form)
-    this.name = form.querySelector('#course-name').value;
-    this.courseTakenOn = form.querySelector('#course-taken-on').value;
+    // name
+    let name = form.querySelector('#course-name').value
+    if (name.length === 0) name = 'Unnamed Course';
+    this.name = name;
 
+    // courseTakenOn
+    this.courseTakenOn = {
+      'selected': form.querySelector('#course-taken-on').value,
+      'year': form.getAttribute('data-year'),
+      'termSession': form.getAttribute('data-term-session'),
+    }
+
+    // sessionOffering
     const sessionOffering = [];
     form.querySelectorAll('[name="session-offering"]').forEach(session =>{
       if (session.checked) sessionOffering.push(session.value);
     });
     this.sessionOffering = sessionOffering;
 
+    // pre and corequisites
     let complete = form.querySelector('#complete').value;
     complete = complete.split(",");
     complete = complete.map(str => {return str.trim()});
@@ -17,6 +27,7 @@ class Course {
     let concurrent = form.querySelector('#complete').value;
     concurrent = concurrent.split(",");
     concurrent = concurrent.map(str => {return str.trim()});
+
     this.prereqs = {
       'complete': complete,
       'concurrentlyEnrolled': concurrent,
@@ -32,20 +43,17 @@ class Course {
 }
 
 
-
-
 /** 
  *  INITIALIZE - creates all term blocks
  */
 function init(){
   // create term blocks
-  cr_termBlock(18); // 6 years of terms
+  createTermBlock(18); // 6 years of terms
 
 
   autoExpandTextareas()
 }
 init();
-
 
 
 
@@ -76,7 +84,7 @@ function fillCourses(){
  * @param {number} num_termBlocks 
  */
 
-function cr_termBlock(num_termBlocks = null){
+function createTermBlock(num_termBlocks = null){
   if (num_termBlocks === null) num_termBlocks = 1;
   
 
@@ -121,18 +129,91 @@ function setTermBlockData(termBlock){
 
 // Event Listeners // 
 
-document.querySelector('#myform').addEventListener( 'submit', (e) => {
+/**
+ * submit form listener
+ * 
+ * gets form data from element, creates and adds new course object and element
+ */
+const form = document.querySelector('#myform');
+form.addEventListener( 'submit', (e) => {
   e.preventDefault();
 
   // get data
-  // create and add new course object and element
-  const obj = new Course(e.target);
-  console.log(obj)
+  const form = e.target
+  const courseData = new Course(form);
+  console.log(courseData);
+
+  // TODO
+  // keep global array of all courses, objects in array must always match with courses on screen
+
+  // create courseBlock
+  const courseBlock = createCourseBlock(courseData);
+  document.querySelector('.all-courses-container').appendChild(courseBlock)
 
   // clear form
-  console.log('submitted');
+  console.log('submitted course form');
 });
 
+
+
+/**
+ * create course block functions
+ * 
+ * dynamically generates course block html
+ */
+function getCourseBlockHTML(){
+  return `
+  <div class="course-title"></div>
+  <div class="course-input-container">
+    <label for="course-taken-on">Set Term:</label>
+    <select name="course-taken-on" id="course-taken-on">
+      <option value="auto">Auto Schedule</option>
+      <option data-year="1" data-term-session="fall">Year 1 Fall</option>
+      <option data-year="1" data-term-session="fall">Year 1 Spring</option>
+      <option data-year="1" data-term-session="fall">Year 1 Summer</option>
+      
+      <option data-year="2" data-term-session="fall">Year 2 Fall</option>
+      <option data-year="2" data-term-session="fall">Year 2 Spring</option>
+      <option data-year="2" data-term-session="fall">Year 2 Summer</option>
+
+      <option data-year="3" data-term-session="fall">Year 3 Fall</option>
+      <option data-year="3" data-term-session="fall">Year 3 Spring</option>
+      <option data-year="3" data-term-session="fall">Year 3 Summer</option>
+
+      <option data-year="4" data-term-session="fall">Year 4 Fall</option>
+      <option data-year="4" data-term-session="fall">Year 4 Spring</option>
+      <option data-year="4" data-term-session="fall">Year 4 Summer</option>
+
+      <option data-year="5" data-term-session="fall">Year 5 Fall</option>
+      <option data-year="5" data-term-session="fall">Year 5 Spring</option>
+      <option data-year="5" data-term-session="fall">Year 5 Summer</option>
+
+    </select>
+  </div>
+  <div class="course-input-container">
+    <input type="checkbox" name="exclude-from-schedule" id="exclude-from-schedule">
+    <label for="exclude-from-schedule">Exclude from schedule</label>
+  </div>
+  <button class="remove-course">Remove</button>
+  `
+}
+
+function createCourseBlock(courseData){
+  const courseBlock = document.createElement('div');
+  courseBlock.classList.add('course-block')
+  courseBlock.innerHTML = getCourseBlockHTML();
+
+  courseBlock.querySelector('.course-title').innerText = courseData.name;
+  courseBlock.querySelector('select').selected = courseData.selected;
+
+  courseBlock.courseData = courseData
+
+  // TODO
+  // add listener functionality (i.e. set term, exclude from schedule, and remove course)
+  // note: each will change element object
+
+  return courseBlock;
+}
 
 
 
