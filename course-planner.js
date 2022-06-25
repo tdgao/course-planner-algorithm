@@ -1,6 +1,29 @@
 class Course {
-  constructor(name, termSessionOffering, prereqs, courseTakenOn, takeCourse){
-    this.name = name;
+  constructor(form){
+    console.log(form)
+    this.name = form.querySelector('#course-name').value;
+    this.courseTakenOn = form.querySelector('#course-taken-on').value;
+
+    const sessionOffering = [];
+    form.querySelectorAll('[name="session-offering"]').forEach(session =>{
+      if (session.checked) sessionOffering.push(session.value);
+    });
+    this.sessionOffering = sessionOffering;
+
+    let complete = form.querySelector('#complete').value;
+    complete = complete.split(",");
+    complete = complete.map(str => {return str.trim()});
+
+    let concurrent = form.querySelector('#complete').value;
+    concurrent = concurrent.split(",");
+    concurrent = concurrent.map(str => {return str.trim()});
+    this.prereqs = {
+      'complete': complete,
+      'concurrentlyEnrolled': concurrent,
+    }
+
+
+    //name, termSessionOffering, prereqs, courseTakenOn, takeCourse
   }
 
   testMethod1(test){
@@ -19,7 +42,7 @@ function init(){
   cr_termBlock(18); // 6 years of terms
 
 
-
+  autoExpandTextareas()
 }
 init();
 
@@ -96,5 +119,38 @@ function setTermBlockData(termBlock){
 }
 
 
+// Event Listeners // 
+
+document.querySelector('#myform').addEventListener( 'submit', (e) => {
+  e.preventDefault();
+
+  // get data
+  // create and add new course object and element
+  const obj = new Course(e.target);
+  console.log(obj)
+
+  // clear form
+  console.log('submitted');
+});
 
 
+
+
+
+
+
+
+/** 
+ * auto expand textarea
+ * copied from https://stackoverflow.com/questions/7745741/auto-expanding-textarea
+ */
+function autoExpandTextareas(){
+  document.querySelectorAll("textarea").forEach(textarea => {
+    var heightLimit = 200; /* Maximum height: 200px */
+    
+    textarea.oninput = function() {
+      textarea.style.height = ""; /* Reset the height*/
+      textarea.style.height = Math.min(textarea.scrollHeight, heightLimit) + "px";
+    };
+  });
+}
