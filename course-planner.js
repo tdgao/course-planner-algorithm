@@ -1,16 +1,15 @@
 class Course {
   constructor(form){
+    this.testMethod1('testing call from constructor')
+
     // name
     let name = form.querySelector('#course-name').value
     if (name.length === 0) name = 'Unnamed Course';
     this.name = name;
 
     // courseTakenOn
-    this.courseTakenOn = {
-      'selected': form.querySelector('#course-taken-on').value,
-      'year': form.getAttribute('data-year'),
-      'termSession': form.getAttribute('data-term-session'),
-    }
+    const selectInput = form.querySelector('#course-taken-on');
+    this.setCourseTakenOn(selectInput);
 
     // sessionOffering
     const sessionOffering = [];
@@ -39,6 +38,15 @@ class Course {
 
   testMethod1(test){
     console.log('running test method', test);
+  }
+
+  setCourseTakenOn(selectInput){
+    const selectedOption = selectInput.selectedOptions[0]; // assume only one option selected
+    this.courseTakenOn = {
+      'selected': selectInput.value,
+      'year': selectedOption.getAttribute('data-year'),
+      'termSession': selectedOption.getAttribute('data-term-session'),
+    }
   }
 }
 
@@ -166,7 +174,7 @@ function getCourseBlockHTML(){
   <div class="course-title"></div>
   <div class="course-input-container">
     <label for="course-taken-on">Set Term:</label>
-    <select name="course-taken-on" id="course-taken-on">
+    <select name="course-taken-on" class="course-taken-on">
       <option value="auto">Auto Schedule</option>
       <option data-year="1" data-term-session="fall">Year 1 Fall</option>
       <option data-year="1" data-term-session="fall">Year 1 Spring</option>
@@ -191,7 +199,7 @@ function getCourseBlockHTML(){
     </select>
   </div>
   <div class="course-input-container">
-    <input type="checkbox" name="exclude-from-schedule" id="exclude-from-schedule">
+    <input type="checkbox" name="exclude-from-schedule" class="exclude-from-schedule">
     <label for="exclude-from-schedule">Exclude from schedule</label>
   </div>
   <button class="remove-course">Remove</button>
@@ -211,10 +219,19 @@ function createCourseBlock(courseData){
   // TODO
   // add listener functionality (i.e. set term, exclude from schedule, and remove course)
   // note: each will change element object
+  addCourseBlockListeners(courseBlock);
 
   return courseBlock;
 }
 
+function addCourseBlockListeners(courseBlock){
+  const select = courseBlock.querySelector('.course-taken-on');
+  select.addEventListener('change', () =>{
+    // course taken on has changed
+    courseBlock.courseData.setCourseTakenOn(select);
+  });
+
+}
 
 
 
