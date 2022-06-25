@@ -11,8 +11,8 @@ class Course {
 
 
 
-/** INITIALIZE
- *   - creates all term blocks
+/** 
+ *  INITIALIZE - creates all term blocks
  */
 function init(){
   // create term blocks
@@ -28,7 +28,9 @@ init();
 
 
 
-/** fill courses
+/** 
+ * fill courses from list into schedule
+ * 
  *  - fits all courses from list into schedule
  *  - considers restrictions (pre/co reqs, session offering)
  * 
@@ -45,7 +47,11 @@ function fillCourses(){
 
 
 
-// Generate term blocks and set data on init //
+/**
+ * Generate term blocks and set data on init
+ * 
+ * @param {number} num_termBlocks 
+ */
 
 function cr_termBlock(num_termBlocks = null){
   if (num_termBlocks === null) num_termBlocks = 1;
@@ -66,11 +72,16 @@ function cr_termBlock(num_termBlocks = null){
 }
 
 
-// term block attributes
-// data-term-session: fall, spring, summer
-// data-term-type: work, study
-// data-term-number: 1, 2, .. n (study and work terms are included in the same sequence)
-// data-max-course-num: 1, 2 .. n (maximum number of courses allowed in term)
+/**
+ * set term block attributes
+ * 
+ * data-term-session: fall, spring, summer
+ * data-term-type: work, study
+ * data-term-number: 1, 2, .. n (study and work terms are included in the same sequence)
+ * data-max-course-num: 1, 2 .. n (maximum number of courses allowed in term)
+ * 
+ * @param {object} termBlock 
+ */
 
 function setTermBlockData(termBlock){
   const termNumber = parseInt(document.querySelectorAll('.term-block').length);
@@ -83,3 +94,7 @@ function setTermBlockData(termBlock){
   termBlock.setAttribute('data-term-type', 'study');
   termBlock.setAttribute('data-max-course-num', '4');
 }
+
+
+
+
