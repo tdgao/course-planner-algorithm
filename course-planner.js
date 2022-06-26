@@ -9,7 +9,7 @@ class Course {
 
     // courseTakenOn
     const selectInput = form.querySelector('#course-taken-on');
-    this.setCourseTakenOn(selectInput);
+    this.courseTakenOn = setCourseTakenOn(selectInput);
 
     // sessionOffering
     const sessionOffering = [];
@@ -23,7 +23,7 @@ class Course {
     complete = complete.split(",");
     complete = complete.map(str => {return str.trim()});
 
-    let concurrent = form.querySelector('#complete').value;
+    let concurrent = form.querySelector('#complete-or-concurrent').value;
     concurrent = concurrent.split(",");
     concurrent = concurrent.map(str => {return str.trim()});
 
@@ -40,13 +40,14 @@ class Course {
     console.log('running test method', test);
   }
 
-  setCourseTakenOn(selectInput){
-    const selectedOption = selectInput.selectedOptions[0]; // assume only one option selected
-    this.courseTakenOn = {
-      'selected': selectInput.value,
-      'year': selectedOption.getAttribute('data-year'),
-      'termSession': selectedOption.getAttribute('data-term-session'),
-    }
+}
+
+function setCourseTakenOn(selectInput){
+  const selectedOption = selectInput.selectedOptions[0]; // assume only one option selected
+  return {
+    'selected': selectInput.value,
+    'year': selectedOption.getAttribute('data-year'),
+    'termSession': selectedOption.getAttribute('data-term-session'),
   }
 }
 
@@ -59,6 +60,15 @@ function init(){
   // create term blocks
   createTermBlock(18); // 6 years of terms
 
+  let coursesData = localStorage.getItem('coursesData');
+  if (coursesData !== null) coursesData = JSON.parse(coursesData);
+  if (coursesData !== null){
+    console.log(coursesData)
+    coursesData.forEach( courseData => {
+      createCourseBlock(courseData);
+    });
+  }
+  ALL_COURSES = coursesData;
 
   autoExpandTextareas();
 }
@@ -157,8 +167,7 @@ form.addEventListener( 'submit', (e) => {
   saveCoursesData();
 
   // create courseBlock
-  const courseBlock = createCourseBlock(courseData);
-  document.querySelector('.all-courses-container').appendChild(courseBlock)
+  createCourseBlock(courseData);
 
   // clear form
   console.log('submitted course form');
@@ -174,6 +183,13 @@ form.addEventListener( 'submit', (e) => {
 function getCourseBlockHTML(){
   return `
   <div class="course-title"></div>
+  <div class="course-prereqs">
+    complete:
+    <span class="course-prereqs-complete"></span><br>
+    concurrently enrolled: 
+    <span class="course-prereqs-concurrent"></span>
+  </div>
+
   <div class="course-input-container">
     <label for="course-taken-on">Set Term:</label>
     <select name="course-taken-on" class="course-taken-on">
@@ -212,19 +228,32 @@ function getCourseBlockHTML(){
 
 function createCourseBlock(courseData){
   const courseBlock = document.createElement('div');
-  courseBlock.classList.add('course-block')
+  courseBlock.classList.add('course-block');
   courseBlock.innerHTML = getCourseBlockHTML();
 
+  // set title
   courseBlock.querySelector('.course-title').innerText = courseData.name;
-  courseBlock.querySelector('select').selected = courseData.selected;
 
-  courseBlock.courseData = courseData
+  // set prereqs text
+  courseBlock.querySelector('.course-prereqs-complete').innerText = courseData.prereqs.complete.join([separator = ', ']);
+  courseBlock.querySelector('.course-prereqs-concurrent').innerText = courseData.prereqs.concurrentlyEnrolled.join([separator = ', ']);
+
+
+  // set selected course taken on option
+  const year = courseData.courseTakenOn.year;
+  const termSession = courseData.courseTakenOn.termSession;
+  const termSessionOption = courseBlock.querySelector(`option[data-year='${year}'][data-term-session='${termSession}']`)
+  if (termSessionOption !== null) termSessionOption.selected = true; // null for case where option is auto schedule
+
+
+  courseBlock.courseData = courseData;
 
   // TODO
   // add listener functionality (i.e. set term, exclude from schedule, and remove course)
   // note: each will change element object
   addCourseBlockListeners(courseBlock);
 
+  document.querySelector('.all-courses-container').appendChild(courseBlock);
   return courseBlock;
 }
 
@@ -232,7 +261,7 @@ function addCourseBlockListeners(courseBlock){
   const select = courseBlock.querySelector('.course-taken-on');
   select.addEventListener('change', () =>{
     // course taken on has changed
-    courseBlock.courseData.setCourseTakenOn(select);
+    courseBlock.courseData.courseTakenOn = setCourseTakenOn(select);
     saveCoursesData();
   });
 
@@ -258,7 +287,7 @@ function addCourseBlockListeners(courseBlock){
  * 
  */
 function saveCoursesData(){
-  localStorage.setItem('coursesData', ALL_COURSES);
+  localStorage.setItem('coursesData', JSON.stringify(ALL_COURSES) );
 }
 
 
