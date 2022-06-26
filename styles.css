@@ -10,6 +10,7 @@ textarea{
   resize: vertical;
 }
 
+
 .main-container{
   display: flex;
   justify-content: space-around;
@@ -36,16 +37,46 @@ textarea{
   /* border: 1px solid black; */
   background-color: rgba(255, 255, 255, 0.50);
 
-  width: 200px;
+  width: 100px;
   height: 120px;
 }
 
 
 .form-input-container{
-  margin-bottom: 20px;
+  margin: 20px 0;
+}
+#course-taken-on{
+  margin-top: 5px;
+}
+input#fall{
+  margin-top: 5px;
+}
+.prereqs-title{
+  margin-bottom: 5px;
 }
 
 
 .course-block{
+  width: 350px;
   margin: 20px 0;
+  padding: 15px;
+  border-radius: 10px;
+  background-color: #D2E2C4;
 }
+.course-block .course-title{
+  margin-bottom: 5px;
+  font-size: 18px;
+  font-weight: 500;
+}
+.course-prereqs{
+  font-weight: 500;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+.course-prereqs span{
+  font-weight: 400;
+}
+.course-input-container{
+  margin-bottom: 8px;
+}
+
