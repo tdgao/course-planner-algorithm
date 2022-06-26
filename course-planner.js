@@ -60,7 +60,7 @@ function init(){
   createTermBlock(18); // 6 years of terms
 
 
-  autoExpandTextareas()
+  autoExpandTextareas();
 }
 init();
 
@@ -79,7 +79,7 @@ init();
  *    - if excluded from schedule, do not add
  *    - add if (pre/co reqs completed, and session is offered)
  */
-function fillCourses(){
+function generateSchedule(){
 
 }
 
@@ -152,9 +152,9 @@ form.addEventListener( 'submit', (e) => {
   const courseData = new Course(form);
   console.log(courseData);
 
-  // TODO
-  // keep global array of all courses, objects in array must always match with courses on screen
+  // save courses data to global array and local storage
   ALL_COURSES.push(courseData);
+  saveCoursesData();
 
   // create courseBlock
   const courseBlock = createCourseBlock(courseData);
@@ -233,11 +233,13 @@ function addCourseBlockListeners(courseBlock){
   select.addEventListener('change', () =>{
     // course taken on has changed
     courseBlock.courseData.setCourseTakenOn(select);
+    saveCoursesData();
   });
 
   const checkbox = courseBlock.querySelector('[name="exclude-from-schedule"]');
   checkbox.addEventListener('change', () => {
     courseBlock.courseData.excludeFromSchedule = checkbox.checked;
+    saveCoursesData();
   });
 
   const removeBtn = courseBlock.querySelector('.remove-course-btn');
@@ -246,10 +248,18 @@ function addCourseBlockListeners(courseBlock){
     ALL_COURSES.splice(courseDataIndex, 1);
 
     courseBlock.remove();
+    saveCoursesData();
   });
 }
 
 
+/**
+ * save all courses data to session
+ * 
+ */
+function saveCoursesData(){
+  localStorage.setItem('coursesData', ALL_COURSES);
+}
 
 
 
