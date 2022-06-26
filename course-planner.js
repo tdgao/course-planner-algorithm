@@ -32,7 +32,7 @@ class Course {
       'concurrentlyEnrolled': concurrent,
     }
 
-
+    this.excludeFromSchedule = false;
     //name, termSessionOffering, prereqs, courseTakenOn, takeCourse
   }
 
@@ -50,6 +50,7 @@ class Course {
   }
 }
 
+let ALL_COURSES = [];
 
 /** 
  *  INITIALIZE - creates all term blocks
@@ -153,6 +154,7 @@ form.addEventListener( 'submit', (e) => {
 
   // TODO
   // keep global array of all courses, objects in array must always match with courses on screen
+  ALL_COURSES.push(courseData);
 
   // create courseBlock
   const courseBlock = createCourseBlock(courseData);
@@ -199,10 +201,12 @@ function getCourseBlockHTML(){
     </select>
   </div>
   <div class="course-input-container">
-    <input type="checkbox" name="exclude-from-schedule" class="exclude-from-schedule">
-    <label for="exclude-from-schedule">Exclude from schedule</label>
+    <label>
+      <input type="checkbox" name="exclude-from-schedule" class="exclude-from-schedule">
+      Exclude from schedule
+    </label>
   </div>
-  <button class="remove-course">Remove</button>
+  <button class="remove-course-btn">Remove</button>
   `
 }
 
@@ -231,6 +235,18 @@ function addCourseBlockListeners(courseBlock){
     courseBlock.courseData.setCourseTakenOn(select);
   });
 
+  const checkbox = courseBlock.querySelector('[name="exclude-from-schedule"]');
+  checkbox.addEventListener('change', () => {
+    courseBlock.courseData.excludeFromSchedule = checkbox.checked;
+  });
+
+  const removeBtn = courseBlock.querySelector('.remove-course-btn');
+  removeBtn.addEventListener('click', () => {
+    const courseDataIndex = ALL_COURSES.indexOf(courseBlock.courseData);
+    ALL_COURSES.splice(courseDataIndex, 1);
+
+    courseBlock.remove();
+  });
 }
 
 
