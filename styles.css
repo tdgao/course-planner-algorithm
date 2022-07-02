@@ -41,7 +41,9 @@ textarea{
   height: 120px;
 }
 
-
+.add-course-form{
+  display: none;
+}
 .form-input-container{
   margin: 20px 0;
 }
