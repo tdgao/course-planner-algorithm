@@ -24,14 +24,17 @@ h3{
 
 .main-container{
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
 }
 
 
-/* DEGREE SCHEDULE */
+/* DEGREE SCHEDULE CONTAINER */
+.schedule-panel{
+  margin-left: 60px;
+}
 
 .year-container{
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 h2.year-title{
   margin-left: 2px;
@@ -54,6 +57,48 @@ h2.year-title{
 
 
 
+/* COURSES PANEL */
+
+/* add course container */
+.add-course-container{
+  width: 400px;
+  padding: 15px;
+  margin-top: 20px;
+  border-radius: 10px;
+  background-color: #D2E2C4;
+}
+.add-course-container h2{
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+.add-course-container label{
+  font-weight: 500;
+}
+.add-course-container input{
+  position: relative;
+  top: -2px;
+  margin-left: 10px;
+  padding: 4px;
+
+  border-radius: 5px;
+  border: 1px solid hsla(0, 0%, 20%, 0.5);
+}
+.add-course-container button{
+  margin-top: 10px;
+  padding: 7px 20px;
+  
+  font-weight: 400;
+  font-size: 0.9em;
+  font-family: "Roboto", Arial, sans-serif;
+  color: white;
+  background-color: #5B7F4A;
+  border-radius: 5px;
+  border: none;
+
+  cursor: pointer;
+}
+
+/* course block */
 .course-block{
   width: 350px;
   margin: 20px 0;

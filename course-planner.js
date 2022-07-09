@@ -1,17 +1,11 @@
-function setCourseTakenOn(selectInput){
-  const selectedOption = selectInput.selectedOptions[0]; // assume only one option selected
-  return {
-    'selected': selectInput.value,
-    'year': selectedOption.getAttribute('data-year'),
-    'termSession': selectedOption.getAttribute('data-term-session'),
-  }
-}
-
-let ALL_COURSES = [];
 
 /** 
- *  INITIALIZE - creates all term blocks
+ * INITIALIZE APP
+ *  - set all global variables
+ *  - create course and term blocks
  */
+let ALL_COURSES = [];
+
 function init(){
   // create term blocks
   createTermBlock(18); // 6 years of terms
@@ -65,9 +59,7 @@ function generateSchedule(){
  */
 function createTermBlock(num_termBlocks = 1){  
   for (let i = 0; i < num_termBlocks; i++){ 
-    // create new term block
-    // const termBlock = document.createElement('div');
-    // termBlock.classList.add('term-block')
+    // create new term block - get from html template
     const termBlockTemplate = document.getElementById('term-block-template');
     const termBlock = termBlockTemplate.content.querySelector(".term-block").cloneNode(true);
 
@@ -86,7 +78,7 @@ function createTermBlock(num_termBlocks = 1){
 }
 
 /**
- * set term block attributes
+ * set term block attributes according to sequence
  * 
  * @param {object} termBlock 
  */
