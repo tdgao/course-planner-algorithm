@@ -17,86 +17,6 @@
   <div class="main-container">
     <div class="courses-panel">
       <h1>Courses</h1>
-
-      <div class="add-course-form">
-        <form id="myform">
-
-          <div class="form-input-container">
-            <label for="course-name">Course Name:</label> 
-            <br>
-            <input type="text" name="course-name" id="course-name"> 
-            <br>
-          </div>
-
-
-          <div class="form-input-container">
-            <label for="course-taken-on">Set Term to Take Course:</label>
-            <br>
-            <select name="course-taken-on" id="course-taken-on">
-              <option value="auto" selected>Auto Schedule</option>
-              <option data-year="1" data-term-session="fall">Year 1 Fall</option>
-              <option data-year="1" data-term-session="spring">Year 1 Spring</option>
-              <option data-year="1" data-term-session="summer">Year 1 Summer</option>
-              
-              <option data-year="2" data-term-session="fall">Year 2 Fall</option>
-              <option data-year="2" data-term-session="spring">Year 2 Spring</option>
-              <option data-year="2" data-term-session="summer">Year 2 Summer</option>
-  
-              <option data-year="3" data-term-session="fall">Year 3 Fall</option>
-              <option data-year="3" data-term-session="spring">Year 3 Spring</option>
-              <option data-year="3" data-term-session="summer">Year 3 Summer</option>
-  
-              <option data-year="4" data-term-session="fall">Year 4 Fall</option>
-              <option data-year="4" data-term-session="spring">Year 4 Spring</option>
-              <option data-year="4" data-term-session="summer">Year 4 Summer</option>
-  
-              <option data-year="5" data-term-session="fall">Year 5 Fall</option>
-              <option data-year="5" data-term-session="spring">Year 5 Spring</option>
-              <option data-year="5" data-term-session="summer">Year 5 Summer</option>
-  
-            </select>
-            <br>
-          </div>
-
-
-
-          <div class="form-input-container">
-            <label for="session-offering">Term Session Offering:</label>
-            <br>
-  
-            <input type="checkbox" name="session-offering" id="fall" value="fall">
-            <label for="fall">Fall</label>
-            <input type="checkbox" name="session-offering" id="spring" value="spring">
-            <label for="spring">Spring</label>
-            <input type="checkbox" name="session-offering" id="summer" value="summer">
-            <label for="summer">Summer</label>
-            <br>
-          </div>
-  
-          
-          <div class="form-input-container">
-            <div class="prereqs-title">Prerequisites</div>
-            
-            <label for="complete">Complete:</label>
-            <br>
-            <textarea name="complete" id="complete"></textarea>
-            <br>
-
-            <label for="complete-or-concurrent">Complete or concurrently enrolled:</label>
-            <br>
-            <textarea name="complete-or-concurrent" id="complete-or-concurrent"></textarea>
-            <br>
-          </div>
-
-          <button type="submit" id="submit">Add Course</button>
-          <br>
-
-
-        </form>
-        <br>
-
-      </div>
-
       <div class="all-courses-container"></div>
     </div>
 
@@ -104,33 +24,31 @@
       <h1>Degree Schdule</h1>
 
       <div class="year-container" data-year="1">
-        <div class="year-title">Year 1</div>
+        <h2 class="year-title">Year 1</h2>
         <div class="term-block-container"></div>
 
       </div>
       <div class="year-container" data-year="2">
-        <div class="year-title">Year 2</div>
+        <h2 class="year-title">Year 2</h2>
         <div class="term-block-container"></div>
 
       </div>
       <div class="year-container" data-year="3">
-        <div class="year-title">Year 3</div>
+        <h2 class="year-title">Year 3</h2>
         <div class="term-block-container"></div>
-
-
       </div>
       <div class="year-container" data-year="4">
-        <div class="year-title">Year 4</div>
+        <h2 class="year-title">Year 4</h2>
         <div class="term-block-container"></div>
 
       </div>
       <div class="year-container" data-year="5">
-        <div class="year-title">Year 5</div>
+        <h2 class="year-title">Year 5</h2>
         <div class="term-block-container"></div>
 
       </div>
       <div class="year-container" data-year="6">
-        <div class="year-title">Year 6</div>
+        <h2 class="year-title">Year 6</h2>
         <div class="term-block-container"></div>
 
       </div>
@@ -140,4 +58,33 @@
   </div>
 
 </body>
+
+<template id="course-block-template">
+  <div class="course-title"></div>
+
+
+  <div class="course-prereqs">
+
+  </div>
+
+  
+  <button class="remove-course-btn">Remove</button>
+
+</template>
+
+<template id="term-block-template">
+  <div class="term-block"
+    data-term-session="fall" 
+    data-year="3" 
+    data-term-type="study" 
+    data-max-course-num="4"
+  >
+
+    <h3 class="term-session-heading">Fall</h3>
+    <div class="term-courses-container">
+
+    </div>
+  </div>
+</template>
+
 </html>

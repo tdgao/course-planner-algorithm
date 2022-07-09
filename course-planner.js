@@ -1,47 +1,3 @@
-class Course {
-  constructor(form){
-    this.testMethod1('testing call from constructor')
-
-    // name
-    let name = form.querySelector('#course-name').value
-    if (name.length === 0) name = 'Unnamed Course';
-    this.name = name;
-
-    // courseTakenOn
-    const selectInput = form.querySelector('#course-taken-on');
-    this.courseTakenOn = setCourseTakenOn(selectInput);
-
-    // sessionOffering
-    const sessionOffering = [];
-    form.querySelectorAll('[name="session-offering"]').forEach(session =>{
-      if (session.checked) sessionOffering.push(session.value);
-    });
-    this.sessionOffering = sessionOffering;
-
-    // pre and corequisites
-    let complete = form.querySelector('#complete').value;
-    complete = complete.split(",");
-    complete = complete.map(str => {return str.trim()});
-
-    let concurrent = form.querySelector('#complete-or-concurrent').value;
-    concurrent = concurrent.split(",");
-    concurrent = concurrent.map(str => {return str.trim()});
-
-    this.prereqs = {
-      'complete': complete,
-      'concurrentlyEnrolled': concurrent,
-    }
-
-    this.excludeFromSchedule = false;
-    //name, termSessionOffering, prereqs, courseTakenOn, takeCourse
-  }
-
-  testMethod1(test){
-    console.log('running test method', test);
-  }
-
-}
-
 function setCourseTakenOn(selectInput){
   const selectedOption = selectInput.selectedOptions[0]; // assume only one option selected
   return {
@@ -70,7 +26,6 @@ function init(){
   }
   ALL_COURSES = coursesData;
 
-  autoExpandTextareas();
 }
 init();
 
@@ -95,24 +50,33 @@ function generateSchedule(){
 
 
 
+//////////////////////////////////
+//// TERM BLOCK IMPLEMENTATION////
 
+// TODO - implement dynamic generation for year-containers
+//  - motive: can create and remove years as needed
+//  - use create year on init, within create year, create 3 term blocks
+//  - add functions for create and remove year, min num years is 3
 
 /**
  * Generate term blocks and set data on init
  * 
  * @param {number} num_termBlocks 
  */
-
-function createTermBlock(num_termBlocks = null){
-  if (num_termBlocks === null) num_termBlocks = 1;
-  
-
-  
+function createTermBlock(num_termBlocks = 1){  
   for (let i = 0; i < num_termBlocks; i++){ 
     // create new term block
-    const termBlock = document.createElement('div');
-    termBlock.classList.add('term-block')
+    // const termBlock = document.createElement('div');
+    // termBlock.classList.add('term-block')
+    const termBlockTemplate = document.getElementById('term-block-template');
+    const termBlock = termBlockTemplate.content.querySelector(".term-block").cloneNode(true);
+
     setTermBlockData(termBlock);
+
+    // set term-session heading
+    console.log(termBlock)
+    const termSession = termBlock.getAttribute('data-term-session');
+    termBlock.querySelector('.term-session-heading').innerText = capitalize(termSession);
 
     // add term block to it's year container
     const termYear = termBlock.getAttribute('data-year');
@@ -121,14 +85,8 @@ function createTermBlock(num_termBlocks = null){
   }
 }
 
-
 /**
  * set term block attributes
- * 
- * data-term-session: fall, spring, summer
- * data-term-type: work, study
- * data-term-number: 1, 2, .. n (study and work terms are included in the same sequence)
- * data-max-course-num: 1, 2 .. n (maximum number of courses allowed in term)
  * 
  * @param {object} termBlock 
  */
@@ -136,7 +94,7 @@ function createTermBlock(num_termBlocks = null){
 function setTermBlockData(termBlock){
   const termNumber = parseInt(document.querySelectorAll('.term-block').length);
   
-  const termSessions = ['summer', 'fall', 'spring'];
+  const termSessions = ['fall', 'spring', 'summer'];
   const termSession = termSessions[termNumber % 3]; // mod returns 0, 1, 2, (term 1 returns 1, term 3 returns 0, so summer term is 0th index)
   termBlock.setAttribute('data-term-session', termSession);
   termBlock.setAttribute('data-year', parseInt(termNumber/3) + 1); // truncate num plus 1 returns term year given amount of terms
@@ -146,69 +104,9 @@ function setTermBlockData(termBlock){
 }
 
 
-// Event Listeners // 
 
-/**
- * submit form listener
- * 
- * gets form data from element, creates and adds new course object and element
- */
-const form = document.querySelector('#myform');
-form.addEventListener( 'submit', (e) => {
-  e.preventDefault();
-
-  // get data
-  const form = e.target
-  const courseData = new Course(form);
-  console.log(courseData);
-
-  // save courses data to global array and local storage
-  ALL_COURSES.push(courseData);
-  saveCoursesData();
-
-  // create courseBlock
-  createCourseBlock(courseData);
-
-  // clear form
-  resetForm(form);
-  console.log('submitted course form');
-});
-
-/**
- * reset the form
- * 
- * https://stackoverflow.com/questions/6028576/how-to-clear-a-form
- * @param {object} form 
- * @returns 
- */
-function resetForm(form) {
-  // clearing inputs
-  var inputs = form.getElementsByTagName('input');
-  for (var i = 0; i<inputs.length; i++) {
-      switch (inputs[i].type) {
-          // case 'hidden':
-          case 'text':
-              inputs[i].value = '';
-              break;
-          case 'radio':
-          case 'checkbox':
-              inputs[i].checked = false;   
-      }
-  }
-
-  // clearing selects
-  var selects = form.getElementsByTagName('select');
-  for (var i = 0; i<selects.length; i++)
-      selects[i].selectedIndex = 0;
-
-  // clearing textarea
-  var text= form.getElementsByTagName('textarea');
-  for (var i = 0; i<text.length; i++)
-      text[i].innerHTML= '';
-
-  return false;
-}
-
+////////////////////////////////////
+//// COURSE BLOCK IMPLEMENTATION////
 
 /**
  * create course block functions
@@ -216,51 +114,8 @@ function resetForm(form) {
  * dynamically generates course block html
  */
 function getCourseBlockHTML(){
-  return `
-  <div class="course-title"></div>
-  <div class="course-prereqs">
-    complete:
-    <span class="course-prereqs-complete"></span><br>
-    concurrently enrolled: 
-    <span class="course-prereqs-concurrent"></span>
-  </div>
-
-  <div class="course-input-container">
-    <label for="course-taken-on">Set Term:</label>
-    <select name="course-taken-on" class="course-taken-on">
-      <option value="auto">Auto Schedule</option>
-      <option data-year="1" data-term-session="fall">Year 1 Fall</option>
-      <option data-year="1" data-term-session="fall">Year 1 Spring</option>
-      <option data-year="1" data-term-session="fall">Year 1 Summer</option>
-      
-      <option data-year="2" data-term-session="fall">Year 2 Fall</option>
-      <option data-year="2" data-term-session="fall">Year 2 Spring</option>
-      <option data-year="2" data-term-session="fall">Year 2 Summer</option>
-
-      <option data-year="3" data-term-session="fall">Year 3 Fall</option>
-      <option data-year="3" data-term-session="fall">Year 3 Spring</option>
-      <option data-year="3" data-term-session="fall">Year 3 Summer</option>
-
-      <option data-year="4" data-term-session="fall">Year 4 Fall</option>
-      <option data-year="4" data-term-session="fall">Year 4 Spring</option>
-      <option data-year="4" data-term-session="fall">Year 4 Summer</option>
-
-      <option data-year="5" data-term-session="fall">Year 5 Fall</option>
-      <option data-year="5" data-term-session="fall">Year 5 Spring</option>
-      <option data-year="5" data-term-session="fall">Year 5 Summer</option>
-
-    </select>
-  </div>
-  <div class="course-input-container">
-    <label>
-      <input type="checkbox" name="exclude-from-schedule" class="exclude-from-schedule">
-      Exclude from schedule
-    </label>
-  </div>
-  <button class="remove-course-btn">Remove</button>
-  `
+  return document.getElementById('course-block-template').content.innerHTML;
 }
-
 function createCourseBlock(courseData){
   const courseBlock = document.createElement('div');
   courseBlock.classList.add('course-block');
@@ -268,18 +123,6 @@ function createCourseBlock(courseData){
 
   // set title
   courseBlock.querySelector('.course-title').innerText = courseData.name;
-
-  // set prereqs text
-  courseBlock.querySelector('.course-prereqs-complete').innerText = courseData.prereqs.complete.join([separator = ', ']);
-  courseBlock.querySelector('.course-prereqs-concurrent').innerText = courseData.prereqs.concurrentlyEnrolled.join([separator = ', ']);
-
-
-  // set selected course taken on option
-  const year = courseData.courseTakenOn.year;
-  const termSession = courseData.courseTakenOn.termSession;
-  const termSessionOption = courseBlock.querySelector(`option[data-year='${year}'][data-term-session='${termSession}']`)
-  if (termSessionOption !== null) termSessionOption.selected = true; // null for case where option is auto schedule
-
 
   courseBlock.courseData = courseData;
 
@@ -293,21 +136,9 @@ function createCourseBlock(courseData){
 }
 
 function addCourseBlockListeners(courseBlock){
-  const select = courseBlock.querySelector('.course-taken-on');
-  select.addEventListener('change', () =>{
-    // course taken on has changed
-    courseBlock.courseData.courseTakenOn = setCourseTakenOn(select);
-    saveCoursesData();
-  });
-
-  const checkbox = courseBlock.querySelector('[name="exclude-from-schedule"]');
-  checkbox.addEventListener('change', () => {
-    courseBlock.courseData.excludeFromSchedule = checkbox.checked;
-    saveCoursesData();
-  });
-
   const removeBtn = courseBlock.querySelector('.remove-course-btn');
   removeBtn.addEventListener('click', () => {
+    // remove course obj from ALL_COURSES
     const courseDataIndex = ALL_COURSES.indexOf(courseBlock.courseData);
     ALL_COURSES.splice(courseDataIndex, 1);
 
@@ -317,28 +148,25 @@ function addCourseBlockListeners(courseBlock){
 }
 
 
+
+
+
+
+
+
+
 /**
- * save all courses data to session
- * 
+ * save all courses data to session/local storage
  */
 function saveCoursesData(){
   localStorage.setItem('coursesData', JSON.stringify(ALL_COURSES) );
 }
 
 
-
-
-/** 
- * auto expand textarea
- * copied from https://stackoverflow.com/questions/7745741/auto-expanding-textarea
+/**
+ * capitalize first letter of a string
+ * @param {*} str 
  */
-function autoExpandTextareas(){
-  document.querySelectorAll("textarea").forEach(textarea => {
-    var heightLimit = 200; /* Maximum height: 200px */
-    
-    textarea.oninput = function() {
-      textarea.style.height = ""; /* Reset the height*/
-      textarea.style.height = Math.min(textarea.scrollHeight, heightLimit) + "px";
-    };
-  });
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
