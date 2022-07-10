@@ -6,11 +6,13 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.action_chains import ActionChains
 
 from bs4 import BeautifulSoup
 import copy
 import json
 import os
+import re
 
 
 """
@@ -118,9 +120,13 @@ def get_course_title(soup):
         return full_title_h2[0].get_text()
 
 
+
+
+
 ## for add course function in scraper implementation
 
-def get_course_data(course_name, course_url):
+def get_course_data(course_name):
+    course_url = get_course_url(course_name)
     soup = get_page_source(course_url)
     container = get_prereq_container(course_url, soup)
 
@@ -132,6 +138,51 @@ def get_course_data(course_name, course_url):
         "requirements":requirements,
         "url": course_url
     }}
+
+def get_course_url(course_name):
+    #object of Options class, passing headless parameter
+    c = Options()
+    c.add_argument('--headless')
+    s = Service('scraper/drivers/chromedriver-v103.exe')
+    browser = webdriver.Chrome(service=s, options=c)
+    browser.get("https://www.uvic.ca/calendar/undergrad/index.php#/courses") # uvic academic calendar - courses
+
+    try:
+        ## program waits until pre reqs container content is loaded
+        element = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.ID, "subjects-list-nav")) # id of subject list container
+        )
+    except: print("no presense of element after 10 seconds")
+    course_subject = re.sub(r'[0-9]', '', course_name) # remove numbers from course name to get subject (MECH220 -> MECH)
+    subject_url = browser.find_element(By.XPATH, "//a[contains(text(),'(%s)')]"%course_subject).get_attribute("href")
+
+    browser.quit()
+
+    #object of Options class, passing headless parameter
+
+    print(subject_url)
+    c = Options()
+    c.add_argument('--headless')
+    s = Service('scraper/drivers/chromedriver-v103.exe')
+    browser = webdriver.Chrome(service=s, options=c)
+    browser.get(str(subject_url)) # uvic academic calendar - courses
+
+    try:
+        element = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "style__item___N3dlN"))
+        )
+    except: print("no presense of element after 10 seconds")
+
+    course_url = browser.find_element(By.XPATH, "//a[contains(text(),'%s')]"%course_name).get_attribute("href")
+
+    browser.quit()
+
+    print(course_url)
+    return course_url
+
+
+
+
 
 if __name__ == "__main__":
 
