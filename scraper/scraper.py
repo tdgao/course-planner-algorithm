@@ -124,6 +124,7 @@ def get_course_title(soup):
 
 
 ## for add course function in scraper implementation
+# TODO - currently runs browser driver 3 times, can cut to two by getting course url from one instance
 
 def get_course_data(course_name):
     course_url = get_course_url(course_name)
