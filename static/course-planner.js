@@ -48,6 +48,26 @@ constructor(form){
  */
 
 /** 
+ * CURRENT STATUS
+ *  - problem: seems that running scraper for whole program will be too slow
+ *  - implentation idea: run scraper for all programs (only some for now, scale after)
+ *     - keep large json file of of all stored courses
+ *     - when add course, first search in json file, then use scraper
+ *     - do similiarly with a large programs json file (each program should contain it's prereqs/required courses for each year)
+ * 
+ * CURRENT TODO
+ *  - create all-courses.json and all-programs.json
+ *  - implement the implementation idea
+ *  - fill json files with all engineering programs, and associated courses
+ *  - 
+ *  - implement add course block (set data and generate div)
+ *  - implement set program (adds all courses within program to associated years)
+ *  - 
+ *  - implement generate schedule - drag and drop, set as work term, create schedule algorithm, and more...
+ */
+
+
+/** 
  * INITIALIZE APP
  *  - set all global variables
  *  - create course and term blocks
