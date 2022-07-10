@@ -150,6 +150,8 @@ function setTermBlockData(termBlock){
 
 /**
  * get course data through route /get_course
+ *  - following https://stackoverflow.com/questions/59975596/connect-javascript-to-python-script-with-flask
+ *  - returns json with detailed course title, prereqs, and url
  * 
  * @param {String} courseName (assume course name in form of BIOL307, BME250, ED-P251)
  */
