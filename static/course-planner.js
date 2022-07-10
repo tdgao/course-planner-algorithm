@@ -149,6 +149,17 @@ function setTermBlockData(termBlock){
 //// COURSE BLOCK IMPLEMENTATION////
 
 /**
+ * get course data through route /get_course
+ * 
+ * @param {String} courseName (assume course name in form of BIOL307, BME250, ED-P251)
+ */
+async function getCourseData(courseName){
+  let response = await fetch('/get_course?course_name='+courseName);
+  response = await response.json();
+  console.log(response);
+}
+
+/**
  * create course block functions
  * 
  * dynamically generates course block html
