@@ -13,7 +13,7 @@ import copy
 import json
 import os
 import re
-
+import time
 
 """
 # ul denotes new requirement (complete 1 of, complete all of)
@@ -30,18 +30,19 @@ for ul
 def get_page_source(url):
     #object of Options class, passing headless parameter
     c = Options()
-    c.add_argument('--headless')
+    # c.add_argument('--headless')
     s = Service('scraper/drivers/chromedriver-v103.exe')
     browser = webdriver.Chrome(service=s, options=c)
-    # browser.set_window_size(1120, 550)
+    browser.set_window_size(1120, 550)
 
     browser.get(url)
 
     try:
         ## program waits until pre reqs container content is loaded
-        element = WebDriverWait(browser, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "rules-wrapper")) # class name of description h3 # id is container of loaded content
+        element = WebDriverWait(browser, 5).until(
+            EC.presence_of_element_located((By.ID, "kuali-catalog-main")) # class name of description h3 # id is container of loaded content
         )
+        time.sleep(2) # wait 2s more to ensure all DOM loaded
     except: print("no rules wrapper after 10 seconds")
 
     ## using BeautifulSoup to parse html 
@@ -50,7 +51,10 @@ def get_page_source(url):
     
     return soup
 
-def get_prereq_container(url, soup=None):
+def get_prereq_container(url=None, soup=None):
+    if (url == None and soup == None): 
+        print("Error: missing url or soup for argument")
+        return
     if (soup == None): soup = get_page_source(url) # if pass in soup, will not run webdriver
 
     container = BeautifulSoup('')
@@ -98,46 +102,57 @@ def get_program_courses(courses_container):
         course_url =  "https://www.uvic.ca/calendar/undergrad/index.php" + str(course['href'])
         # print(course_name, course_url)
 
-        soup = get_page_source(course_url)
-        container = get_prereq_container(course_url, soup)
-
-        print (course_url)
-        requirements = get_requirements( container.find(top_ul) )
-        full_title = get_course_title(soup)
-        program_courses[course_name] = {
-            "full_title": full_title,
-            "requirements":requirements,
-            "url": course_url
-        }
-        # if (i > 3): break #for testing
+        course_data = get_course_data(course_name, course_url)
+        program_courses.update( course_data ) # add course data to program courses json
+        if (i > 3): break #for testing
 
     print(json.dumps(program_courses, indent=2))
     return program_courses
 
 def get_course_title(soup):
-    full_title_h2 = soup.select("#__KUALI_TLP h2")
-    if(len(full_title_h2) > 0): 
-        return full_title_h2[0].get_text()
+    full_title_h2 = soup.select_one("#__KUALI_TLP h2")
+    if(full_title_h2 != None): 
+        return full_title_h2.get_text()
+    else:
+        return None
 
+def get_course_units(soup):
+    units_h3 = soup.find("h3", string="Units")
+    if (units_h3 == None):
+        return None
 
+    units = units_h3.next_sibling
+    if(units == None): 
+        return None
+    
+    return units.get_text()
 
 
 
 ## for add course function in scraper implementation
 # TODO - currently runs browser driver 3 times, can cut to two by getting course url from one instance
 
-def get_course_data(course_name):
-    course_url = get_course_url(course_name)
+def get_course_data(course_name, course_url=None):
+    if (course_url == None): course_url = get_course_url(course_name)
     soup = get_page_source(course_url)
-    container = get_prereq_container(course_url, soup)
+    container = get_prereq_container(soup=soup)
 
-    print (course_url)
+    # check if course is no longer offered (empty dict to not add course)
+    status = soup.select_one("#course-status-notice")
+    if (status != None):
+        if (status.get_text() == "This course is no longer offered."):
+            print("Not adding course (no longer offered)")
+            return {}
+
+    # print (course_url)
     requirements = get_requirements( container.find(top_ul) )
     full_title = get_course_title(soup)
+    units = get_course_units(soup)
     return {course_name: {
         "full_title": full_title,
         "requirements":requirements,
-        "url": course_url
+        "url": course_url,
+        "units": units
     }}
 
 def get_course_url(course_name):
@@ -177,24 +192,22 @@ def get_course_url(course_name):
     course_url = browser.find_element(By.XPATH, "//a[contains(text(),'%s')]"%course_name).get_attribute("href")
 
     browser.quit()
-
     print(course_url)
     return course_url
 
 
 
+def get_program(program_url):
+    soup = get_page_source(program_url)
 
+    program_h2 = soup.select_one("#__KUALI_TLP h2")
+    if(program_h2 == None): 
+        print("Error: uvic program has no program name from url %s"%program_url)
+        return
 
-if __name__ == "__main__":
+    program_name = program_h2.get_text()
 
-    ## UVIC PROGRAM INPUT HERE
-    program_name = "Biology (Bachelor of Science - Major)"
-    program_url = 'https://www.uvic.ca/calendar/undergrad/index.php#/programs/S1gtLTm0ME'
-
-    # if ( not os.path.exists(program_name) ):
-    #     os.mkdir(program_name)
-
-    container = get_prereq_container(program_url)
+    container = get_prereq_container(soup=soup)
 
     program_requirements = {}
     program_requirements["courses"] = get_program_courses(container)
@@ -207,7 +220,14 @@ if __name__ == "__main__":
         program_requirements[year] = requirements
 
 
-    # Writing to sample.json
+    # Writing to all_programs.json
     json_output_name = str(program_name) + ".json"
-    with open("output/"+json_output_name, "w") as outfile:
+    with open("scraper/output/"+json_output_name, "w") as outfile:
         outfile.write(json.dumps(program_requirements))
+
+
+
+if __name__ == "__main__":
+    ## UVIC PROGRAM INPUT HERE
+    program_url = 'https://www.uvic.ca/calendar/undergrad/index.php#/programs/S1gtLTm0ME' #biology program
+    get_program(program_url)
