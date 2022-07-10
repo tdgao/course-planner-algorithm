@@ -156,9 +156,64 @@ function setTermBlockData(termBlock){
  * @param {String} courseName (assume course name in form of BIOL307, BME250, ED-P251)
  */
 async function getCourseData(courseName){
-  let response = await fetch('/get_course?course_name='+courseName);
-  response = await response.json();
-  console.log(response);
+  let courseData = await fetch('/get_course?course_name='+courseName);
+  courseData = await courseData.json();
+  // console.log(courseData);
+
+  return courseData
+}
+
+/**
+ * get, validate, and format course name from input
+ * @param {element} input 
+ */
+function getInputCourseName(input){
+  // get course name from input
+  let courseName = input.value;
+
+  // validate course name - TODO, allow only alphanumeric and dash (-)
+  if (courseName === ''){
+    console.warn("Empty string exception");
+    return 'invalid course name';
+  }
+
+  // format course name
+  courseName = courseName.replace(/\s/g, ''); //remove spaces
+  courseName = courseName.toUpperCase(); //set all caps
+
+  return courseName;
+}
+
+/**
+ * add course form submit listener
+ * 
+ * TODO - add implementation to prevent user from spamming add course
+ */
+const addCourseBtn = document.querySelector('.add-course-btn');
+addCourseBtn.addEventListener('click', () => addNewCourse());
+async function addNewCourse(){
+  console.log('running add course listener');
+  // add loading text
+  const statusMsg = document.createElement('span');
+  statusMsg.innerText = "Loading new course."
+  addCourseBtn.parentNode.appendChild(statusMsg, null);
+
+  // get course name from input
+  const courseNameInput = document.getElementById("course-name");
+  const courseName = getInputCourseName(courseNameInput);
+  if (courseName === "invalid course name"){
+    statusMsg.remove() // remove status
+    return;
+  };
+
+  // get course data
+  const courseData = await getCourseData(courseName);
+  console.log(courseData)
+
+  // create and add course block
+
+  courseNameInput.value = '';
+  statusMsg.remove() // remove status
 }
 
 /**
