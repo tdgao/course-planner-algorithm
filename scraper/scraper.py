@@ -11,7 +11,6 @@ from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
 import copy
 import json
-import os
 import re
 import time
 
@@ -103,34 +102,48 @@ def get_requirements(ul):
 #####################################
 ### courses and program functions ###
 
-def get_program(program_url):
+def add_program(program_url):
     soup = get_page_source(program_url)
 
     program_h2 = soup.select_one("#__KUALI_TLP h2")
     if(program_h2 == None): 
         print("Error: uvic program has no program name from url %s"%program_url)
         return
-
     program_name = program_h2.get_text()
 
     container = get_prereq_container(soup=soup)
 
     program_requirements = {}
-    program_requirements["courses"] = get_program_courses(container)
 
     all_year_ul = container.find_all(top_ul) # root ul of all years from program
-
     for i, year_ul in enumerate(all_year_ul, 1):
         requirements = get_requirements(year_ul)
         year = "year" + str(i)
         program_requirements[year] = requirements
 
+    program_courses = get_program_courses(container)
+    program = {
+        program_name: {
+            "requirements": program_requirements,
+            # "courses": list( program_courses.keys() ) 
+            # TODO - get list of courses by parsing requirements instead, so get 
+            # program courses can be optimized to not scrape courses already 
+            # existing in json (can even be done in js or python, both work) 
+            # (should be done in js, so program is more single purposed i.e. to 
+            # give requirements)
+        }
+    }
 
     # Writing to all_programs.json
-    json_output_name = str(program_name) + ".json"
-    with open("scraper/output/"+json_output_name, "w") as outfile:
-        outfile.write(json.dumps(program_requirements))
+    update_all_courses(program_courses)
+    update_all_programs(program)
 
+    # json_output_name = str(program_name) + ".json"
+    # with open("scraper/output/"+json_output_name, "w") as outfile:
+    #     outfile.write(json.dumps(program_requirements))
+
+## returns all courses associated with program (ie courses in requirements)
+## ommits courses that are no longer offered
 def get_program_courses(courses_container):
     program_courses = {}
 
@@ -144,11 +157,14 @@ def get_program_courses(courses_container):
         program_courses.update( course_data ) # add course data to program courses json
         if (i > 3): break #for testing
 
-    print(json.dumps(program_courses, indent=2))
+    # print(json.dumps(program_courses, indent=2))
     return program_courses
 
 
 def get_course_data(course_name, course_url=None):
+    # TODO - first check if course exists in all_courses.js, with all_courses[course_name]
+    # return that instance of data if it exists
+
     if (course_url == None): course_url = get_course_url(course_name)
     soup = get_page_source(course_url)
     container = get_prereq_container(soup=soup)
@@ -233,9 +249,39 @@ def get_course_url(course_name):
     return course_url
 
 
+"""
+when new program is added, 
+ - push program to all programs json
+ - and add/update it's courses to all courses json
+when a new course is added
+ - update course in all courses json
+
+algorithm:
+ - get json file -> dict
+ - update dict with new values
+ - write dict to json file
+"""
+def update_all_courses(new_courses):
+    all_courses = None
+    with open("static/uvic-calendar-data/all-courses.json", "r") as file:
+        all_courses = json.load(file)
+    print(all_courses)
+    all_courses.update(new_courses)
+    with open("static/uvic-calendar-data/all-courses.json", "w") as file:
+        file.write(json.dumps(all_courses))
+
+def update_all_programs(new_programs):
+    all_programs = None
+    with open("static/uvic-calendar-data/all-programs.json", "r") as file:
+        all_programs = json.load(file)
+
+    all_programs.update(new_programs)
+    with open("static/uvic-calendar-data/all-programs.json", "w") as file:
+        file.write(json.dumps(all_programs))
+
 
 
 if __name__ == "__main__":
     ## UVIC PROGRAM INPUT HERE
     program_url = 'https://www.uvic.ca/calendar/undergrad/index.php#/programs/S1gtLTm0ME' #biology program
-    get_program(program_url)
+    add_program(program_url)
