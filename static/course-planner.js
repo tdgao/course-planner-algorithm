@@ -43,8 +43,7 @@ constructor(form){
 /**
  * TODO LONG TERM
  *  - implement requirements checker (based on program requirements)
- *  - implement select program (somehow either run scraper (slow), or keep all programs on file)
- *    - follow https://towardsdatascience.com/how-to-easily-run-python-scripts-on-website-inputs-d5167bd4eb4b
+ *  1/2 done - implement select program front-end, display only programs within json file
  */
 
 /** 
