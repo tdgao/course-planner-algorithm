@@ -15,17 +15,11 @@ import os
 import re
 import time
 
-"""
-# ul denotes new requirement (complete 1 of, complete all of)
-# ul's each li denotes requirement item
-for ul
-    look into each li
-    if li has ul child
-        remove ul and keep
-    log li.text
 
-    repeat for ul
-"""
+
+
+###############################
+### uvic scraping functions ###
 
 def get_page_source(url):
     #object of Options class, passing headless parameter
@@ -67,6 +61,17 @@ def get_prereq_container(url=None, soup=None):
 def top_ul(tag):
     return len(tag.find_parents("ul")) == 0 and tag.name == "ul"
 
+"""
+# ul denotes new requirement (complete 1 of, complete all of)
+# ul's each li denotes requirement item
+for ul
+    look into each li
+    if li has ul child
+        remove ul and keep
+    log li.text
+
+    repeat for ul
+"""
 def get_requirements(ul):
     if (ul == None): return []
     requirements = []
@@ -93,6 +98,39 @@ def get_requirements(ul):
 
     return requirements
 
+
+
+#####################################
+### courses and program functions ###
+
+def get_program(program_url):
+    soup = get_page_source(program_url)
+
+    program_h2 = soup.select_one("#__KUALI_TLP h2")
+    if(program_h2 == None): 
+        print("Error: uvic program has no program name from url %s"%program_url)
+        return
+
+    program_name = program_h2.get_text()
+
+    container = get_prereq_container(soup=soup)
+
+    program_requirements = {}
+    program_requirements["courses"] = get_program_courses(container)
+
+    all_year_ul = container.find_all(top_ul) # root ul of all years from program
+
+    for i, year_ul in enumerate(all_year_ul, 1):
+        requirements = get_requirements(year_ul)
+        year = "year" + str(i)
+        program_requirements[year] = requirements
+
+
+    # Writing to all_programs.json
+    json_output_name = str(program_name) + ".json"
+    with open("scraper/output/"+json_output_name, "w") as outfile:
+        outfile.write(json.dumps(program_requirements))
+
 def get_program_courses(courses_container):
     program_courses = {}
 
@@ -109,28 +147,6 @@ def get_program_courses(courses_container):
     print(json.dumps(program_courses, indent=2))
     return program_courses
 
-def get_course_title(soup):
-    full_title_h2 = soup.select_one("#__KUALI_TLP h2")
-    if(full_title_h2 != None): 
-        return full_title_h2.get_text()
-    else:
-        return None
-
-def get_course_units(soup):
-    units_h3 = soup.find("h3", string="Units")
-    if (units_h3 == None):
-        return None
-
-    units = units_h3.next_sibling
-    if(units == None): 
-        return None
-    
-    return units.get_text()
-
-
-
-## for add course function in scraper implementation
-# TODO - currently runs browser driver 3 times, can cut to two by getting course url from one instance
 
 def get_course_data(course_name, course_url=None):
     if (course_url == None): course_url = get_course_url(course_name)
@@ -154,6 +170,27 @@ def get_course_data(course_name, course_url=None):
         "url": course_url,
         "units": units
     }}
+
+def get_course_title(soup):
+    full_title_h2 = soup.select_one("#__KUALI_TLP h2")
+    if(full_title_h2 != None): 
+        return full_title_h2.get_text()
+    else:
+        return None
+
+def get_course_units(soup):
+    units_h3 = soup.find("h3", string="Units")
+    if (units_h3 == None):
+        return None
+
+    units = units_h3.next_sibling
+    if(units == None): 
+        return None
+    
+    return units.get_text()
+
+## for add course function in scraper implementation
+# TODO - currently runs browser driver 3 times, can cut to two by getting course url from one instance
 
 def get_course_url(course_name):
     #object of Options class, passing headless parameter
@@ -195,35 +232,6 @@ def get_course_url(course_name):
     print(course_url)
     return course_url
 
-
-
-def get_program(program_url):
-    soup = get_page_source(program_url)
-
-    program_h2 = soup.select_one("#__KUALI_TLP h2")
-    if(program_h2 == None): 
-        print("Error: uvic program has no program name from url %s"%program_url)
-        return
-
-    program_name = program_h2.get_text()
-
-    container = get_prereq_container(soup=soup)
-
-    program_requirements = {}
-    program_requirements["courses"] = get_program_courses(container)
-
-    all_year_ul = container.find_all(top_ul) # root ul of all years from program
-
-    for i, year_ul in enumerate(all_year_ul, 1):
-        requirements = get_requirements(year_ul)
-        year = "year" + str(i)
-        program_requirements[year] = requirements
-
-
-    # Writing to all_programs.json
-    json_output_name = str(program_name) + ".json"
-    with open("scraper/output/"+json_output_name, "w") as outfile:
-        outfile.write(json.dumps(program_requirements))
 
 
 
