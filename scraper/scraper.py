@@ -104,6 +104,7 @@ def get_requirements(ul):
 
 def add_program(program_url):
     soup = get_page_source(program_url)
+    container = get_prereq_container(soup=soup)
 
     program_h2 = soup.select_one("#__KUALI_TLP h2")
     if(program_h2 == None): 
@@ -111,10 +112,7 @@ def add_program(program_url):
         return
     program_name = program_h2.get_text()
 
-    container = get_prereq_container(soup=soup)
-
     program_requirements = {}
-
     all_year_ul = container.find_all(top_ul) # root ul of all years from program
     for i, year_ul in enumerate(all_year_ul, 1):
         requirements = get_requirements(year_ul)
