@@ -73,15 +73,44 @@
 </body>
 
 <template id="course-block-template">
-  <div class="course-title"></div>
+  <div class="course-block">
+    <div class="row">
+      <div class="left">
+        <div class="course-title">ENGR141</div>
 
+      </div>
+      <div class="right">
+        <div class="sections-avaliable-container">
+          <div data-selected="true" data-section="fall" class="section-btn">Fall</div>
+          <div data-selected="true" data-section="spring" class="section-btn">Spring</div>
+          <div data-selected="false" data-section="summer" class="section-btn">Summer</div>
+        </div>
+        <div class="dd-btn">+</div>
 
-  <div class="course-prereqs">
+      </div>
+    </div>
 
+    <div class="dd-expand-container hidden-none">
+      <div class="course-full-title">Engineering Mechanics</div>
+      <div class="course-prereqs-title">Course Prerequisits:</div>
+      <div class="course-prereqs">
+        [
+            {
+                "Complete 1 of: ": [
+                    "MATH100",
+                    "MATH109"
+                ]
+            },
+            {
+                "Completed or concurrently enrolled in 1 of: ": [
+                    "MATH110",
+                    "MATH211"
+                ]
+            }
+        ]
+      </div>
+    </div>
   </div>
-
-  
-  <button class="remove-course-btn">Remove</button>
 
 </template>
 
