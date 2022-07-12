@@ -15,7 +15,8 @@ import re
 import time
 
 
-
+## TODO - try adding user agent to fix error from running scraper in headless mode
+# http://allselenium.info/how-to-setup-user-agent-in-python-selenium-webdriver/
 
 ###############################
 ### uvic scraping functions ###
@@ -209,7 +210,7 @@ def get_course_units(soup):
 def get_course_url(course_name):
     #object of Options class, passing headless parameter
     c = Options()
-    c.add_argument('--headless')
+    # c.add_argument('--headless')
     s = Service('scraper/drivers/chromedriver-v103.exe')
     browser = webdriver.Chrome(service=s, options=c)
     browser.get("https://www.uvic.ca/calendar/undergrad/index.php#/courses") # uvic academic calendar - courses
@@ -229,7 +230,7 @@ def get_course_url(course_name):
 
     print(subject_url)
     c = Options()
-    c.add_argument('--headless')
+    # c.add_argument('--headless')
     s = Service('scraper/drivers/chromedriver-v103.exe')
     browser = webdriver.Chrome(service=s, options=c)
     browser.get(str(subject_url)) # uvic academic calendar - courses
