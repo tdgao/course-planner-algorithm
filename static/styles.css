@@ -58,10 +58,14 @@ h2.year-title{
 
 
 /* COURSES PANEL */
+.courses-panel{
+  width: 500px;
+  /* TODO, decide if want to optimize width of this panel to adjust for screen widths */
+}
 
 /* add course container */
 .add-course-container{
-  width: 400px;
+  /* width: 400px; */
   padding: 15px;
   margin-top: 20px;
   border-radius: 10px;
@@ -103,26 +107,81 @@ h2.year-title{
 
 /* course block */
 .course-block{
-  width: 350px;
+  /* width: 500px; */
   margin: 20px 0;
   padding: 15px;
   border-radius: 10px;
   background-color: #D2E2C4;
 }
-.course-block .course-title{
-  margin-bottom: 5px;
-  font-size: 18px;
-  font-weight: 500;
+.course-block .row{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-.course-prereqs{
-  font-weight: 500;
-  font-size: 13px;
-  margin-bottom: 10px;
-}
-.course-prereqs span{
-  font-weight: 400;
-}
-.course-input-container{
-  margin-bottom: 8px;
+.course-block .right{
+  display: flex;
 }
 
+/* select term sections avaliable container */
+.course-block .sections-avaliable-container{
+  display: flex;
+  align-items: center;
+}
+.course-block .sections-avaliable-container .section-btn{
+  background-color: #5B7F4A;
+  color: white;
+  width: 75px;
+  height: min-content;
+  padding: 0px 0;
+  margin: 0 4px;
+  
+  font-size: 14px;
+  text-align: center;
+  
+  border: 2px solid #5B7F4A;
+  border-radius: 5px;
+
+  cursor: pointer;
+  transition: transform 200ms;
+}
+.course-block .sections-avaliable-container .section-btn[data-selected="false"]{
+  background-color: transparent;
+  font-weight: 500;
+  color: hsl(0, 0%, 20%);
+}
+.course-block .sections-avaliable-container .section-btn:hover{
+  transform: scale(1.05);
+}
+
+.course-block .dd-btn{
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.course-block .course-title{
+  /* margin-bottom: 5px; */
+  font-size: 22px;
+  font-weight: 500;
+}
+
+/* course block expand container */
+.dd-expand-container{
+  margin-top: 5px;
+}
+
+.course-full-title{
+  margin-bottom: 12px;
+}
+
+.course-prereqs-title{
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+.course-prereqs{
+  font-size: 14px;
+}
+
+
+.hidden-none{
+  display: none;
+}
