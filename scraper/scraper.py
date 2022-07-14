@@ -154,7 +154,7 @@ def get_program_courses(courses_container):
 
         course_data = get_course_data(course_name, course_url)
         program_courses.update( course_data ) # add course data to program courses json
-        if (i > 3): break #for testing
+        # if (i > 3): break #for testing
 
     # print(json.dumps(program_courses, indent=2))
     return program_courses
@@ -180,6 +180,7 @@ def get_course_data(course_name, course_url=None):
     full_title = get_course_title(soup)
     units = get_course_units(soup)
     return {course_name: {
+        "course_name": course_name,
         "full_title": full_title,
         "requirements":requirements,
         "url": course_url,
@@ -282,5 +283,5 @@ def update_all_programs(new_programs):
 
 if __name__ == "__main__":
     ## UVIC PROGRAM INPUT HERE
-    program_url = 'https://www.uvic.ca/calendar/undergrad/index.php#/programs/S1gtLTm0ME' #biology program
+    program_url = 'https://www.uvic.ca/calendar/undergrad/index.php#/programs/SJKVp7AME?bc=true&bcCurrent=Software%20Engineering&bcItemType=programs' #biology program
     add_program(program_url)
