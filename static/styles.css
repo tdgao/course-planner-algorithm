@@ -39,6 +39,9 @@ h3{
 h2.year-title{
   margin-left: 2px;
 }
+h2.course-year-title{
+  margin-top: 20px;
+}
 .term-block-container{
   display: flex;
 }
@@ -108,7 +111,7 @@ h2.year-title{
 /* course block */
 .course-block{
   /* width: 500px; */
-  margin: 20px 0;
+  margin: 15px 0;
   padding: 15px;
   border-radius: 10px;
   background-color: #D2E2C4;
@@ -132,7 +135,7 @@ h2.year-title{
   color: white;
   width: 75px;
   height: min-content;
-  padding: 0px 0;
+  padding: 2px 0;
   margin: 0 4px;
   
   font-size: 14px;
@@ -142,6 +145,7 @@ h2.year-title{
   border-radius: 5px;
 
   cursor: pointer;
+  user-select: none;
   transition: transform 200ms;
 }
 .course-block .sections-avaliable-container .section-btn[data-selected="false"]{
@@ -150,7 +154,7 @@ h2.year-title{
   color: hsl(0, 0%, 20%);
 }
 .course-block .sections-avaliable-container .section-btn:hover{
-  transform: scale(1.05);
+  /* transform: scale(1.05); */
 }
 
 .course-block .dd-btn{
