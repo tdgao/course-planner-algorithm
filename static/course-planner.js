@@ -96,8 +96,10 @@ async function init(){
   let programCourses = await getProgramCourses(programReqs);
   console.log(programCourses);
 
-  for( key in programCourses){
-    createCourseBlock( programCourses[key] );
+  for( year in programCourses){
+    for (course in programCourses[year]){
+      createCourseBlock( programCourses[year][course], year );
+    }
   }
 
 
@@ -114,14 +116,20 @@ async function getProgramCourses(programReqs){
   let allCourseData = await fetch("static/uvic-calendar-data/all-courses.json");
   allCourseData = await allCourseData.json();
 
-  const programCoursesList = getDeepValues(programReqs);
+  let programCoursesList = {}
+  for (year in programReqs){
+    programCoursesList[year] = getDeepValues(programReqs[year]);
+  }
   
   let programCourses = {};
-  programCoursesList.forEach(course => {
-    const courseData = allCourseData[course]
-    if (courseData === undefined){ console.warn("could not find course in all-courses.json") }
-    programCourses[course] = courseData;
-  });
+  for (year in programCoursesList){
+    programCourses[year] = {};
+    programCoursesList[year].forEach(course => {
+      const courseData = allCourseData[course]
+      if (courseData === undefined){ console.warn("could not find course in all-courses.json") }
+      programCourses[year][course] = courseData;
+    });
+  }
 
   return programCourses
 }
@@ -295,9 +303,11 @@ async function addNewCourse(){
 function getCourseBlockTemplate(){
   return document.getElementById('course-block-template').content.querySelector('.course-block');
 }
-function createCourseBlock(courseData){
+function createCourseBlock(courseData, year){
   const courseBlock = getCourseBlockTemplate().cloneNode(true);
-  const container = document.querySelector(".all-courses-container");
+
+  // append to associated year
+  const container = document.querySelector(`.all-courses-container [data-year="${year}"]`);
   container.appendChild(courseBlock);
 
   //set pre reqs data
@@ -336,7 +346,6 @@ function closeAllCourseExpanded(){
     container.classList.add("hidden-none");
   })
 }
-
 
 
 
