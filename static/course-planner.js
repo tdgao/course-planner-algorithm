@@ -66,31 +66,83 @@ constructor(form){
  */
 
 
-/** 
+/**  
  * INITIALIZE APP
  *  - set all global variables
  *  - create course and term blocks
  */
-let ALL_COURSES = [];
+let coursesSessionData = null;
 
-function init(){
+async function init(){
   // create term blocks
   createTermBlock(18); // 6 years of terms
 
-  let coursesData = localStorage.getItem('coursesData');
+  // fetch json data in all_programs.json
+  // keep as constant
+  // within courses of program - fetch all course datas needed from all_courses.json
+  // for each course, create course block
+  const PROGRAM = "Software Engineering (Bachelor of Software Engineering)"
+
+  let coursesData = localStorage.getItem('courseSessions');
   if (coursesData !== null) coursesData = JSON.parse(coursesData);
-  if (coursesData !== null){
-    console.log(coursesData)
-    coursesData.forEach( courseData => {
-      createCourseBlock(courseData);
-    });
+
+  let allPrograms = await fetch("static/uvic-calendar-data/all-programs.json");
+  allPrograms = await allPrograms.json();
+  const program = allPrograms[PROGRAM];
+  const programReqs = program.requirements;
+  console.log(programReqs)
+
+  
+  let programCourses = await getProgramCourses(programReqs);
+  console.log(programCourses);
+
+  for( key in programCourses){
+    createCourseBlock( programCourses[key] );
   }
-  ALL_COURSES = coursesData;
+
 
 }
 init();
 
 
+/**
+ * gets all courses needed from program requirements, and returns array of the courses data
+ * @param {*} programReqs 
+ * @returns program courses data 
+ */
+async function getProgramCourses(programReqs){
+  let allCourseData = await fetch("static/uvic-calendar-data/all-courses.json");
+  allCourseData = await allCourseData.json();
+
+  const programCoursesList = getDeepValues(programReqs);
+  
+  let programCourses = {};
+  programCoursesList.forEach(course => {
+    const courseData = allCourseData[course]
+    if (courseData === undefined){ console.warn("could not find course in all-courses.json") }
+    programCourses[course] = courseData;
+  });
+
+  return programCourses
+}
+
+/**
+ * returns list of courses from reqs by finding all strings in obj
+ * https://stackoverflow.com/questions/42674473/get-all-keys-of-a-deep-object-in-javascript
+ * @param {object} obj 
+ */
+ function getDeepValues(obj) {
+  let values = [];
+  for(let key in obj) {
+      if(typeof obj[key] === "object") {
+        subvalues = getDeepValues(obj[key]);
+        values.push( ...subvalues );
+      } else {
+        values.push( obj[key] );
+      }
+  }
+  return values;
+}
 
 
 
@@ -133,7 +185,7 @@ function createTermBlock(num_termBlocks = 1){
     setTermBlockData(termBlock);
 
     // set term-session heading
-    console.log(termBlock)
+    // console.log(termBlock)
     const termSession = termBlock.getAttribute('data-term-session');
     termBlock.querySelector('.term-session-heading').innerText = capitalize(termSession);
 
@@ -240,40 +292,50 @@ async function addNewCourse(){
  * 
  * dynamically generates course block html
  */
-function getCourseBlockHTML(){
-  return document.getElementById('course-block-template').content.innerHTML;
+function getCourseBlockTemplate(){
+  return document.getElementById('course-block-template').content.querySelector('.course-block');
 }
 function createCourseBlock(courseData){
-  const courseBlock = document.createElement('div');
-  courseBlock.classList.add('course-block');
-  courseBlock.innerHTML = getCourseBlockHTML();
+  const courseBlock = getCourseBlockTemplate().cloneNode(true);
+  const container = document.querySelector(".all-courses-container");
+  container.appendChild(courseBlock);
 
-  // set title
-  courseBlock.querySelector('.course-title').innerText = courseData.name;
-
+  //set pre reqs data
   courseBlock.courseData = courseData;
 
-  // TODO
-  // add listener functionality (i.e. set term, exclude from schedule, and remove course)
-  // note: each will change element object
-  addCourseBlockListeners(courseBlock);
+  //set frontend display data
+  courseBlock.querySelector('.course-title').innerText = courseData.course_name || "Unnamed course";
+  courseBlock.querySelector('.course-full-title').innerText = courseData.full_title || "";
+  let courseReqs = courseData.requirements
+  if ( courseReqs.length !== 0) courseReqs = JSON.stringify(courseReqs);
+  else courseReqs = undefined;
+  courseBlock.querySelector('.course-prereqs').innerText = courseReqs || "N/A";
 
-  document.querySelector('.all-courses-container').appendChild(courseBlock);
+  addCourseBlockListeners(courseBlock)
   return courseBlock;
 }
 
 function addCourseBlockListeners(courseBlock){
-  const removeBtn = courseBlock.querySelector('.remove-course-btn');
-  removeBtn.addEventListener('click', () => {
-    // remove course obj from ALL_COURSES
-    const courseDataIndex = ALL_COURSES.indexOf(courseBlock.courseData);
-    ALL_COURSES.splice(courseDataIndex, 1);
+  const ddBtn = courseBlock.querySelector('.dd-btn');
+  ddBtn.addEventListener("click", () => {
+    const ddContainer = courseBlock.querySelector('.course-block .dd-expand-container');
+    const open = !ddContainer.classList.contains("hidden-none");
+    closeAllCourseExpanded();
+    ddContainer.classList.toggle("hidden-none", open);
+  });
 
-    courseBlock.remove();
-    saveCoursesData();
+  const termSessionBtns = courseBlock.querySelectorAll(".section-btn");
+  termSessionBtns.forEach( sessionBtn => {
+    sessionBtn.addEventListener("click", () => {
+      sessionBtn.dataset.selected = !(sessionBtn.dataset.selected === 'true'); // toggle selected
+    });
   });
 }
-
+function closeAllCourseExpanded(){
+  document.querySelectorAll('.course-block .dd-expand-container').forEach(container => {
+    container.classList.add("hidden-none");
+  })
+}
 
 
 
