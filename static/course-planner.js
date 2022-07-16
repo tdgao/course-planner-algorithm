@@ -1,3 +1,5 @@
+import meetsPrereqs from './meetsPrereqs.js'
+
 /*
 
 constructor(form){
@@ -96,13 +98,13 @@ async function init(){
   let programCourses = await getProgramCourses(programReqs);
   console.log(programCourses);
 
-  for( year in programCourses){
-    for (course in programCourses[year]){
+  for(let year in programCourses){
+    for (let course in programCourses[year]){
       createCourseBlock( programCourses[year][course], year );
     }
   }
 
-
+  generateSchedule();
 }
 init();
 
@@ -117,12 +119,12 @@ async function getProgramCourses(programReqs){
   allCourseData = await allCourseData.json();
 
   let programCoursesList = {}
-  for (year in programReqs){
+  for (let year in programReqs){
     programCoursesList[year] = getDeepValues(programReqs[year]);
   }
   
   let programCourses = {};
-  for (year in programCoursesList){
+  for (let year in programCoursesList){
     programCourses[year] = {};
     programCoursesList[year].forEach(course => {
       const courseData = allCourseData[course]
@@ -143,7 +145,7 @@ async function getProgramCourses(programReqs){
   let values = [];
   for(let key in obj) {
       if(typeof obj[key] === "object") {
-        subvalues = getDeepValues(obj[key]);
+        let subvalues = getDeepValues(obj[key]);
         values.push( ...subvalues );
       } else {
         values.push( obj[key] );
@@ -153,20 +155,73 @@ async function getProgramCourses(programReqs){
 }
 
 
-
 /** 
  * fill courses from list into schedule
- * 
  *  - fits all courses from list into schedule
  *  - considers restrictions (pre/co reqs, session offering)
- * 
- *  - first, add all courses with set schedule
- *  - then auto schedule rest: 
- *    - if excluded from schedule, do not add
- *    - add if (pre/co reqs completed, and session is offered)
  */
 function generateSchedule(){
+  // clear all schedule blocks except overridden ones
+  document.querySelectorAll('.schedule-block').forEach( scheduleBlock => {scheduleBlock.remove()})
 
+  // create all schedule blocks
+  let all_scheduleBlocks = [];
+  let completedCourses = [];
+  const all_courses = document.querySelectorAll(".course-block");
+  all_courses.forEach(course =>{
+    const courseData = course.courseData;
+    const sessionOfferings = getSessionOfferings(course);
+
+    const scheduleBlock = createScheduleBlock(courseData, sessionOfferings);
+    all_scheduleBlocks.push(scheduleBlock);
+  });
+
+  const all_terms = document.querySelectorAll(".term-block");
+  console.log(all_terms)
+  all_terms.forEach(term => {
+    const maxCourseNum = parseInt( term.getAttribute("data-max-course-num") );
+    const termSession = term.getAttribute("data-term-session");
+    let curTermCourses = [];
+    // fill term
+    for (let i = 0; i < all_scheduleBlocks.length; i++){
+      if ( term.querySelectorAll('.schedule-block').length >= maxCourseNum ) break;
+
+      const course = all_scheduleBlocks[i];
+      console.log(  sessionOffered(course, termSession))
+      if ( meetsPrereqs(course, completedCourses, curTermCourses) && sessionOffered(course, termSession) ){
+        // add course to term
+        addToTerm(course, term);
+        completedCourses.push(course.courseData.course_name);
+        all_scheduleBlocks.splice( all_scheduleBlocks.indexOf(course) , 1);
+      }
+    }
+    completedCourses.push(...curTermCourses);
+
+  });
+}
+function addToTerm(scheduleBlock, term){
+  term.appendChild(scheduleBlock);
+}
+
+function sessionOffered(scheduleBlock, session){
+  const sessionOfferings = scheduleBlock.sessionOfferings;
+  return ( sessionOfferings.includes(session) );
+}
+
+function createScheduleBlock(courseData, sessionOfferings){
+  const scheduleBlock = document.createElement('div');
+  scheduleBlock.classList.add('schedule-block')
+  scheduleBlock.innerHTML = courseData.course_name;
+  scheduleBlock.courseData = courseData;
+  scheduleBlock.sessionOfferings = sessionOfferings;
+  addScheduleBlockListeners(scheduleBlock);
+
+  return scheduleBlock;
+}
+function addScheduleBlockListeners(scheduleBlock){
+  scheduleBlock.addEventListener("click", () => {
+    console.log("clicked schedule block");
+  })
 }
 
 
@@ -219,7 +274,7 @@ function setTermBlockData(termBlock){
   termBlock.setAttribute('data-year', parseInt(termNumber/3) + 1); // truncate num plus 1 returns term year given amount of terms
 
   termBlock.setAttribute('data-term-type', 'study');
-  termBlock.setAttribute('data-max-course-num', '4');
+  termBlock.setAttribute('data-max-course-num', '6');
 }
 
 
@@ -321,6 +376,8 @@ function createCourseBlock(courseData, year){
   else courseReqs = undefined;
   courseBlock.querySelector('.course-prereqs').innerText = courseReqs || "N/A";
 
+  courseBlock.querySelector('.course-title').setAttribute("href", courseData.url)
+
   addCourseBlockListeners(courseBlock)
   return courseBlock;
 }
@@ -338,6 +395,7 @@ function addCourseBlockListeners(courseBlock){
   termSessionBtns.forEach( sessionBtn => {
     sessionBtn.addEventListener("click", () => {
       sessionBtn.dataset.selected = !(sessionBtn.dataset.selected === 'true'); // toggle selected
+      generateSchedule();
     });
   });
 }
@@ -347,7 +405,15 @@ function closeAllCourseExpanded(){
   })
 }
 
-
+function getSessionOfferings(courseBlock){
+  let sessionOfferings = [];
+  courseBlock.querySelectorAll('.section-btn').forEach(section => {
+    if ( section.dataset.selected === "true" ){
+      sessionOfferings.push( section.dataset.section  );
+    }
+  });
+  return sessionOfferings;
+}
 
 
 
