@@ -42,6 +42,9 @@ h2.year-title{
 h2.course-year-title{
   margin-top: 20px;
 }
+h3.term-session-heading{
+  margin-bottom: 8px;
+}
 .term-block-container{
   display: flex;
 }
@@ -55,7 +58,7 @@ h2.course-year-title{
   border-radius: 5px;
 
   width: 160px;
-  height: 125px;
+  height: 165px;
 }
 
 
@@ -167,6 +170,17 @@ h2.course-year-title{
   font-size: 22px;
   font-weight: 500;
 }
+.course-block .course-title,
+.course-block .course-title:link,
+.course-block .course-title:visited,
+.course-block .course-title:hover,
+.course-block .course-title:active {
+  color: inherit;
+  text-decoration: inherit;
+}
+.course-block .course-title:hover{
+  text-decoration: underline;
+}
 
 /* course block expand container */
 .dd-expand-container{
@@ -180,11 +194,15 @@ h2.course-year-title{
 .course-prereqs-title{
   font-weight: 500;
   margin-bottom: 5px;
+  color: hsl(0, 0%, 20%);
 }
 .course-prereqs{
   font-size: 14px;
 }
 
+.schedule-block{
+  margin: 3px 0;
+}
 
 .hidden-none{
   display: none;
