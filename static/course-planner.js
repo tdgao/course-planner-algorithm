@@ -1,47 +1,3 @@
-import meetsPrereqs from './meetsPrereqs.js'
-
-/*
-
-constructor(form){
-  this.testMethod1('testing call from constructor')
-
-  // name
-  let name = form.querySelector('#course-name').value
-  if (name.length === 0) name = 'Unnamed Course';
-  this.name = name;
-
-  // courseTakenOn
-  const selectInput = form.querySelector('#course-taken-on');
-  this.courseTakenOn = setCourseTakenOn(selectInput);
-
-  // sessionOffering
-  const sessionOffering = [];
-  form.querySelectorAll('[name="session-offering"]').forEach(session =>{
-    if (session.checked) sessionOffering.push(session.value);
-  });
-  this.sessionOffering = sessionOffering;
-
-  // pre and corequisites
-  let complete = form.querySelector('#complete').value;
-  complete = complete.split(",");
-  complete = complete.map(str => {return str.trim()});
-
-  let concurrent = form.querySelector('#complete-or-concurrent').value;
-  concurrent = concurrent.split(",");
-  concurrent = concurrent.map(str => {return str.trim()});
-
-  this.prereqs = {
-    'complete': complete,
-    'concurrentlyEnrolled': concurrent,
-  }
-
-  this.excludeFromSchedule = false;
-  //name, termSessionOffering, prereqs, courseTakenOn, takeCourse
-}
-
-*/
-
-
 /**
  * TODO LONG TERM
  *  - implement requirements checker (based on program requirements)
@@ -67,6 +23,9 @@ constructor(form){
  *  - implement generate schedule - drag and drop, set as work term, create schedule algorithm, and more...
  */
 
+
+
+ import meetsPrereqs from './meetsPrereqs.js'
 
 /**  
  * INITIALIZE APP
