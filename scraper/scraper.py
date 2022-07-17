@@ -93,6 +93,7 @@ def get_requirements(ul):
             if (li): ## if req has link, will return linked text (BIO123 instead of BIO123 - some description)
                 if (li.find('a')):
                     requirements.append(li.find('a').get_text())
+                # TODO - add entry to li without 'a', as these will contain special conditions
             else:
                 requirements.append(li.get_text())
 
