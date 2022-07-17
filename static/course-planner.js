@@ -25,7 +25,7 @@
 
 
 
- import meetsPrereqs from './meetsPrereqs.js'
+import {meetsPrereqs, addAssumeCompleted} from './meetsPrereqs.js'
 
 /**  
  * INITIALIZE APP
@@ -51,11 +51,11 @@ async function init(){
   allPrograms = await allPrograms.json();
   const program = allPrograms[PROGRAM];
   const programReqs = program.requirements;
-  console.log(programReqs)
+  // console.log(programReqs)
 
   
   let programCourses = await getProgramCourses(programReqs);
-  console.log(programCourses);
+  // console.log(programCourses);
 
   for(let year in programCourses){
     for (let course in programCourses[year]){
@@ -120,44 +120,69 @@ async function getProgramCourses(programReqs){
  *  - considers restrictions (pre/co reqs, session offering)
  */
 function generateSchedule(){
+  console.log('running')
   // clear all schedule blocks except overridden ones
   document.querySelectorAll('.schedule-block').forEach( scheduleBlock => {scheduleBlock.remove()})
 
   // create all schedule blocks
-  let all_scheduleBlocks = [];
-  let completedCourses = [];
-  const all_courses = document.querySelectorAll(".course-block");
-  all_courses.forEach(course =>{
-    const courseData = course.courseData;
-    const sessionOfferings = getSessionOfferings(course);
-
-    const scheduleBlock = createScheduleBlock(courseData, sessionOfferings);
-    all_scheduleBlocks.push(scheduleBlock);
-  });
-
+  let all_scheduleBlocks = getAllScheduleBlocks();
   const all_terms = document.querySelectorAll(".term-block");
-  console.log(all_terms)
+
   all_terms.forEach(term => {
+    let completedCourses = getCompletedCourses(term, "completed");
+    let curTermCourses = getCompletedCourses(term, "concurrent");
+    
     const maxCourseNum = parseInt( term.getAttribute("data-max-course-num") );
     const termSession = term.getAttribute("data-term-session");
-    let curTermCourses = [];
+    
+    // console.log(completedCourses);
+    // console.log(term);
+    // console.log(all_scheduleBlocks.length);
+
     // fill term
     for (let i = 0; i < all_scheduleBlocks.length; i++){
       if ( term.querySelectorAll('.schedule-block').length >= maxCourseNum ) break;
 
-      const course = all_scheduleBlocks[i];
-      console.log(  sessionOffered(course, termSession))
-      if ( meetsPrereqs(course, completedCourses, curTermCourses) && sessionOffered(course, termSession) ){
-        // add course to term
-        addToTerm(course, term);
-        completedCourses.push(course.courseData.course_name);
-        all_scheduleBlocks.splice( all_scheduleBlocks.indexOf(course) , 1);
+      const scheduleBlock = all_scheduleBlocks[i];
+      const hasSessionOffering = sessionOffered(scheduleBlock, termSession);
+      if (!hasSessionOffering) continue;
+
+      const meetsRequirements = meetsPrereqs(scheduleBlock, completedCourses, curTermCourses);
+      if (!meetsRequirements) continue;
+
+      if ( meetsRequirements && hasSessionOffering ){
+        // add scheduleBlock to term
+        addToTerm(scheduleBlock, term);
+        curTermCourses.push(scheduleBlock.courseData.course_name);
+
+        // restart and look through all courses again as concurrent has changed
+        all_scheduleBlocks.splice( all_scheduleBlocks.indexOf(scheduleBlock) , 1);
+        i = -1;
       }
     }
-    completedCourses.push(...curTermCourses);
-
+    
+    // console.log(all_scheduleBlocks.length);
   });
 }
+
+function getCompletedCourses(term, which="completed"){
+  let completedCourses = []
+  document.querySelectorAll('.term-block .schedule-block').forEach(scheduleBlock => {
+    const scheduleBlock_TermNum = parseInt(scheduleBlock.parentElement.dataset.termNum);
+    const curTermNum =  parseInt(term.dataset.termNum);
+
+    if (which === "completed" &&  scheduleBlock_TermNum < curTermNum ){
+      completedCourses.push(scheduleBlock.courseData.course_name);
+    }
+    else if (which === "concurrent" &&  scheduleBlock_TermNum == curTermNum ){
+      completedCourses.push(scheduleBlock.courseData.course_name);
+    }
+
+  });
+  addAssumeCompleted(completedCourses);
+  return completedCourses;
+}
+
 function addToTerm(scheduleBlock, term){
   term.appendChild(scheduleBlock);
 }
@@ -167,7 +192,7 @@ function sessionOffered(scheduleBlock, session){
   return ( sessionOfferings.includes(session) );
 }
 
-function createScheduleBlock(courseData, sessionOfferings){
+export function createScheduleBlock(courseData, sessionOfferings){ // export for testing
   const scheduleBlock = document.createElement('div');
   scheduleBlock.classList.add('schedule-block')
   scheduleBlock.innerHTML = courseData.course_name;
@@ -181,6 +206,20 @@ function addScheduleBlockListeners(scheduleBlock){
   scheduleBlock.addEventListener("click", () => {
     console.log("clicked schedule block");
   })
+}
+
+function getAllScheduleBlocks(){
+  let all_scheduleBlocks = [];
+
+  const all_courses = document.querySelectorAll(".course-block");
+  all_courses.forEach(course =>{
+    const courseData = course.courseData;
+    const sessionOfferings = getSessionOfferings(course);
+
+    const scheduleBlock = createScheduleBlock(courseData, sessionOfferings);
+    all_scheduleBlocks.push(scheduleBlock);
+  });
+  return all_scheduleBlocks;
 }
 
 
@@ -234,6 +273,7 @@ function setTermBlockData(termBlock){
 
   termBlock.setAttribute('data-term-type', 'study');
   termBlock.setAttribute('data-max-course-num', '6');
+  termBlock.setAttribute('data-term-num', termNumber)
 }
 
 
