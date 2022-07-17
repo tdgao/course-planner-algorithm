@@ -32,9 +32,8 @@ import {meetsPrereqs, addAssumeCompleted} from './meetsPrereqs.js'
  *  - set all global variables
  *  - create course and term blocks
  */
-
-let coursesSessionData = null;
-
+let draggingScheduleBlock = null;
+let draggingFromTerm = null;
 
 async function init(){
   // create term blocks
@@ -62,6 +61,7 @@ async function init(){
     }
   }
 
+  // initialize defined course session offerings
   const courseSessions = getCourseSessionsData();
   for(let courseName in courseSessions){
     const courseBlock = document.querySelector(`.course-block[data-course-name="${courseName}"]`);
@@ -72,6 +72,20 @@ async function init(){
       }
     });
   }
+
+  // initialize force scheduled courses
+  const scheduledCourses = getScheduledCoursesData();
+  scheduledCourses.forEach((curTerm, i) => {
+    
+    const term = document.querySelector(`.term-block[data-term-num="${i}"]`);
+    curTerm.forEach(course => {
+      const courseBlock = document.querySelector(`.course-block[data-course-name="${course}"]`);
+      const sessionOfferings = getSessionOfferings(courseBlock);
+      const scheduleBlock = createScheduleBlock(courseBlock.courseData, sessionOfferings);
+      scheduleBlock.classList.add('force-schedule');
+      term.appendChild(scheduleBlock);
+    });
+  });
 
   generateSchedule();
 }
@@ -132,7 +146,7 @@ async function getProgramCourses(programReqs){
 function generateSchedule(){
   console.log('running')
   // clear all schedule blocks except overridden ones
-  document.querySelectorAll('.schedule-block').forEach( scheduleBlock => {scheduleBlock.remove()})
+  document.querySelectorAll('.schedule-block:not(.force-schedule)').forEach( scheduleBlock => {scheduleBlock.remove()})
 
   // create all schedule blocks
   let all_scheduleBlocks = getAllScheduleBlocks();
@@ -204,7 +218,7 @@ function sessionOffered(scheduleBlock, session){
 
 export function createScheduleBlock(courseData, sessionOfferings){ // export for testing
   const scheduleBlock = document.createElement('div');
-
+  scheduleBlock.setAttribute('draggable', true)
   scheduleBlock.classList.add('schedule-block')
   scheduleBlock.innerHTML = courseData.course_name;
   scheduleBlock.courseData = courseData;
@@ -217,15 +231,27 @@ function addScheduleBlockListeners(scheduleBlock){
   scheduleBlock.addEventListener("click", () => {
     console.log("clicked schedule block");
   });
-
+  scheduleBlock.addEventListener("dragstart", (e) => {
+    console.log('drag start');
+    draggingFromTerm = e.target.parentElement;
+    draggingScheduleBlock = e.target;
+  });
 
 }
 
 function getAllScheduleBlocks(){
   let all_scheduleBlocks = [];
 
+  // get forced schedule courses, and do not re-add
+  let forcedScheduleBlocks = [];
+  document.querySelectorAll('.schedule-block.force-schedule').forEach(scheduleBlock => {
+    forcedScheduleBlocks.push(scheduleBlock.courseData.course_name);
+  });
+
   const all_courses = document.querySelectorAll(".course-block");
   all_courses.forEach(course =>{
+    if (forcedScheduleBlocks.includes(course.courseData.course_name)) return; // do not create new forced schedule blocks
+
     const courseData = course.courseData;
     const sessionOfferings = getSessionOfferings(course);
 
@@ -268,6 +294,7 @@ function createTermBlock(num_termBlocks = 1){
     const container = document.querySelector(`.year-container[data-year='${termYear}'] .term-block-container`)
     container.appendChild(termBlock);
 
+    addTermBlockListeners(termBlock);
   }
 }
 
@@ -288,6 +315,37 @@ function setTermBlockData(termBlock){
   termBlock.setAttribute('data-term-type', 'study');
   termBlock.setAttribute('data-max-course-num', '6');
   termBlock.setAttribute('data-term-num', termNumber)
+}
+
+function addTermBlockListeners(termBlock){
+  // drag drop listeners
+  termBlock.addEventListener('dragenter', e => {
+    console.log('hi');
+  });
+  termBlock.addEventListener('dragleave', e => {
+    console.log('bye');
+  });
+
+  // allow drop
+  termBlock.addEventListener('dragover', e => {
+    e.preventDefault();
+  });
+  termBlock.addEventListener('drop', e => {
+    console.log(draggingFromTerm,termBlock )
+
+    // conditions must be - meets pre reqs and has enough space,
+    // if not enough space, place and generate schedule again
+
+    if (draggingFromTerm != termBlock){
+      termBlock.appendChild(draggingScheduleBlock);
+      draggingScheduleBlock.classList.add("force-schedule")
+      console.log('dropped');
+      saveScheduledCoursesData();
+      generateSchedule();
+    }
+    draggingScheduleBlock = null;
+    draggingFromTerm = null;
+  });
 }
 
 
@@ -437,8 +495,26 @@ function getSessionOfferings(courseBlock){
 /**
  * save all courses data to session/local storage
  */
-function saveCoursesData(){
-  localStorage.setItem('coursesData', JSON.stringify(ALL_COURSES) );
+function saveScheduledCoursesData(){
+  console.log('saved')
+  let scheduledCourses = [];
+
+  document.querySelectorAll('.term-block').forEach(term => {
+    let forceScheduled = [];
+    term.querySelectorAll('.schedule-block.force-schedule').forEach(scheduleBlock => {
+      forceScheduled.push( scheduleBlock.courseData.course_name );
+    });
+    scheduledCourses.push(forceScheduled);
+  });
+
+  localStorage.setItem('scheduledCourses', JSON.stringify(scheduledCourses) );
+}
+function getScheduledCoursesData(){
+  let courseSessions = localStorage.getItem('scheduledCourses');
+  if (courseSessions !== null) courseSessions = JSON.parse(courseSessions);
+  else courseSessions = [];
+  
+  return courseSessions;
 }
 
 function saveCourseSessionsData(){
@@ -457,7 +533,6 @@ function saveCourseSessionsData(){
 }
 function getCourseSessionsData(){
   let courseSessions = localStorage.getItem('courseSessions');
-
   if (courseSessions !== null) courseSessions = JSON.parse(courseSessions);
   else courseSessions = {};
   
