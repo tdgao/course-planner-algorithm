@@ -32,7 +32,9 @@ import {meetsPrereqs, addAssumeCompleted} from './meetsPrereqs.js'
  *  - set all global variables
  *  - create course and term blocks
  */
+
 let coursesSessionData = null;
+
 
 async function init(){
   // create term blocks
@@ -43,9 +45,6 @@ async function init(){
   // within courses of program - fetch all course datas needed from all_courses.json
   // for each course, create course block
   const PROGRAM = "Software Engineering (Bachelor of Software Engineering)"
-
-  let coursesData = localStorage.getItem('courseSessions');
-  if (coursesData !== null) coursesData = JSON.parse(coursesData);
 
   let allPrograms = await fetch("static/uvic-calendar-data/all-programs.json");
   allPrograms = await allPrograms.json();
@@ -61,6 +60,17 @@ async function init(){
     for (let course in programCourses[year]){
       createCourseBlock( programCourses[year][course], year );
     }
+  }
+
+  const courseSessions = getCourseSessionsData();
+  for(let courseName in courseSessions){
+    const courseBlock = document.querySelector(`.course-block[data-course-name="${courseName}"]`);
+    courseBlock.querySelectorAll('.section-btn').forEach(sessionBtn => {
+      const session = sessionBtn.dataset.section;
+      if (courseSessions[courseName].includes(session)){
+        sessionBtn.dataset.selected = true;
+      }
+    });
   }
 
   generateSchedule();
@@ -194,6 +204,7 @@ function sessionOffered(scheduleBlock, session){
 
 export function createScheduleBlock(courseData, sessionOfferings){ // export for testing
   const scheduleBlock = document.createElement('div');
+
   scheduleBlock.classList.add('schedule-block')
   scheduleBlock.innerHTML = courseData.course_name;
   scheduleBlock.courseData = courseData;
@@ -205,7 +216,9 @@ export function createScheduleBlock(courseData, sessionOfferings){ // export for
 function addScheduleBlockListeners(scheduleBlock){
   scheduleBlock.addEventListener("click", () => {
     console.log("clicked schedule block");
-  })
+  });
+
+
 }
 
 function getAllScheduleBlocks(){
@@ -254,6 +267,7 @@ function createTermBlock(num_termBlocks = 1){
     const termYear = termBlock.getAttribute('data-year');
     const container = document.querySelector(`.year-container[data-year='${termYear}'] .term-block-container`)
     container.appendChild(termBlock);
+
   }
 }
 
@@ -275,7 +289,6 @@ function setTermBlockData(termBlock){
   termBlock.setAttribute('data-max-course-num', '6');
   termBlock.setAttribute('data-term-num', termNumber)
 }
-
 
 
 ////////////////////////////////////
@@ -369,6 +382,8 @@ function createCourseBlock(courseData, year){
 
   //set frontend display data
   courseBlock.querySelector('.course-title').innerText = courseData.course_name || "Unnamed course";
+  courseBlock.dataset.courseName = courseData.course_name || "Unnamed course";
+
   courseBlock.querySelector('.course-full-title').innerText = courseData.full_title || "";
   let courseReqs = courseData.requirements
   if ( courseReqs.length !== 0) courseReqs = JSON.stringify(courseReqs);
@@ -394,6 +409,7 @@ function addCourseBlockListeners(courseBlock){
   termSessionBtns.forEach( sessionBtn => {
     sessionBtn.addEventListener("click", () => {
       sessionBtn.dataset.selected = !(sessionBtn.dataset.selected === 'true'); // toggle selected
+      saveCourseSessionsData();
       generateSchedule();
     });
   });
@@ -425,6 +441,28 @@ function saveCoursesData(){
   localStorage.setItem('coursesData', JSON.stringify(ALL_COURSES) );
 }
 
+function saveCourseSessionsData(){
+  let sessionData = {};
+
+  document.querySelectorAll('.course-block').forEach(course => {
+    let sessions = [];
+    course.querySelectorAll('.section-btn[data-selected="true"]').forEach(sectionBtn => {
+      sessions.push( sectionBtn.dataset.section );
+    });
+    const courseName = course.courseData.course_name;
+    sessionData[courseName] = sessions;
+  });
+
+  localStorage.setItem('courseSessions', JSON.stringify(sessionData) );
+}
+function getCourseSessionsData(){
+  let courseSessions = localStorage.getItem('courseSessions');
+
+  if (courseSessions !== null) courseSessions = JSON.parse(courseSessions);
+  else courseSessions = {};
+  
+  return courseSessions;
+}
 
 /**
  * capitalize first letter of a string
