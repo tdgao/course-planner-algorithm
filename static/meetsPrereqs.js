@@ -12,8 +12,6 @@
  * @returns 
  */
 export function meetsPrereqs(scheduleBlock, completedCourses, curTermCourses, requirement = null){
-  // if (requirement === null) addAssumeCompleted(completedCourses);
-
   if (scheduleBlock.courseData.requirements.length === 0) return true;
   const prereqs = scheduleBlock.courseData.requirements[0];
   if (requirement === null) requirement = prereqs;
