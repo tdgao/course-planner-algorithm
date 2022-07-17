@@ -8,7 +8,10 @@ function main(){
   // tests here
   testMeetsPrereqs1();
   testMeetsPrereqs2();
-  testMeetsPrereqs3();
+  testConcurrent();
+  testNoMasterBullet();
+  testENGR120();
+
 }
 main();
 
@@ -179,7 +182,7 @@ function testMeetsPrereqs2(){
 
 
 
-function testMeetsPrereqs3(){
+function testConcurrent(){
   console.log("%cTesting concurrent", "font-weight:bold; color: cyan");
   
   const courseData = {
@@ -233,4 +236,125 @@ function testMeetsPrereqs3(){
   curTermCourses = ['MATH211'];
   meets = meetsPrereqs(scheduleBlock, completedCourses, curTermCourses);
   displayResult(false, meets, meets);
+}
+
+function testNoMasterBullet(){
+  console.log("%cTesting two free bullets/no master bullet of complete all", "font-weight:bold; color: cyan");
+  
+  const courseData = {
+    "course_name": "MATH101",
+    "full_title": "MATH101 - Calculus II",
+    "requirements": [
+      {
+        "Complete 1 of: ": [
+          "MATH100",
+          "MATH109"
+        ]
+      },
+      "or permission of the department."
+    ],
+    "url": "https://www.uvic.ca/calendar/undergrad/index.php#/courses/view/5d1f72acd2bc1524008cb36a",
+    "units": "1.5"
+  };
+  const sessionOffering = ['summer','spring'];
+
+  const scheduleBlock = createScheduleBlock(courseData, sessionOffering);
+  let completedCourses, curTermCourses, meets;
+
+  completedCourses = ['MATH100', 'CSC360'];
+  curTermCourses = ['MATH211', 'ENGR141'];
+  meets = meetsPrereqs(scheduleBlock, completedCourses, curTermCourses);
+  displayResult(true, meets, meets);
+
+
+  completedCourses = ['MATH101'];
+  curTermCourses = ['ENGR141'];
+  meets = meetsPrereqs(scheduleBlock, completedCourses, curTermCourses);
+  displayResult(false, meets, meets);
+
+  completedCourses = [];
+  curTermCourses = [];
+  meets = meetsPrereqs(scheduleBlock, completedCourses, curTermCourses);
+  displayResult(false, meets, meets);
+}
+
+function testENGR120(){
+  console.log("%cTesting ENGR120 to go into spring term", "font-weight:bold; color: cyan");
+  
+  const courseData = {
+    "course_name": "ENGR120",
+    "full_title": "ENGR120 - Design and Communication II",
+    "requirements": [
+      {
+        "Complete all of the following": [
+          {
+            "Complete  1  of the following": [
+              {
+                "Complete 1 of: ": [
+                  "ENGR110",
+                  "ENGR111"
+                ]
+              },
+              {
+                "Complete all of the following": [
+                  {
+                    "Complete all of: ": [
+                      "ENGR112"
+                    ]
+                  },
+                  {
+                    "Complete 1 of: ": [
+                      "ATWP135",
+                      "ENGL135"
+                    ]
+                  }
+                ]
+              },
+              {
+                "Complete all of the following": [
+                  {
+                    "Complete all of: ": [
+                      "ELEC199"
+                    ]
+                  },
+                  {
+                    "Complete 1 of: ": [
+                      "ATWP135",
+                      "ENGL135"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Complete  1  of the following": [
+              {
+                "Complete all of: ": [
+                  "CSC110"
+                ]
+              },
+              {
+                "Completed or concurrently enrolled in all of: ": [
+                  "CSC111"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "url": "https://www.uvic.ca/calendar/undergrad/index.php#/courses/view/5e8bc7a86fd5672600958d67",
+    "units": "2.5"
+  };
+  const sessionOffering = ['summer','spring'];
+
+  const scheduleBlock = createScheduleBlock(courseData, sessionOffering);
+  let completedCourses, curTermCourses, meets;
+
+  completedCourses = ['CSC111', 'ENGR110', 'ENGR130', 'MATH110', 'MATH100'];
+  curTermCourses = [];
+  meets = meetsPrereqs(scheduleBlock, completedCourses, curTermCourses);
+  displayResult(true, meets, meets);
+
 }
