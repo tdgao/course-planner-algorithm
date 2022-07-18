@@ -4,4 +4,4 @@ Show a year schedule of courses to take, given by parameters of course pre-reqs 
 
 ## Running the Web App
 
-`py main.py`
+Use `py main.py` to run the app locally
