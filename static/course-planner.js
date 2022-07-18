@@ -87,6 +87,20 @@ async function init(){
     });
   });
 
+  // initialize term setting inputs
+  const termSettings = getTermSettingsData();
+  termSettings.forEach((inputSettings, i) => {
+    const termBlock = document.querySelector(`.term-block[data-term-num="${i}"]`);
+
+    const termTypeInput = termBlock.querySelector('input[name="work-study"]');
+    termTypeInput.checked = inputSettings.termTypeInputChecked;
+    setTermType(termTypeInput, termBlock);
+
+    const numCoursesInput = termBlock.querySelector("input[name='num-max-courses']");
+    numCoursesInput.value = inputSettings.numCoursesInputVal;
+    setTermNumCourses(numCoursesInput, termBlock);
+  });
+
   generateSchedule();
 }
 init();
@@ -162,7 +176,7 @@ function generateSchedule(){
     const maxCourseNum = parseInt( term.getAttribute("data-max-course-num") );
     const termSession = term.getAttribute("data-term-session");
     
-    console.log(curTermCourses);
+    // console.log(curTermCourses);
     // console.log(completedCourses);
     // console.log(term);
     // console.log(all_scheduleBlocks.length);
@@ -195,7 +209,7 @@ function generateSchedule(){
 
 function getCompletedCourses(term){
   let completedCourses = [];
-  
+
   document.querySelectorAll('.term-block .schedule-block').forEach(scheduleBlock => {
     const scheduleBlock_TermNum = parseInt(scheduleBlock.parentElement.dataset.termNum);
     const curTermNum =  parseInt(term.dataset.termNum);
@@ -348,24 +362,15 @@ function addTermBlockListeners(termBlock){
   // settings listeners
   const termTypeInput = termBlock.querySelector('input[name="work-study"]');
   termTypeInput.addEventListener("change", () => {
-    const termType = termTypeInput.checked ? 'work' : 'study';
-    termBlock.setAttribute('data-term-type', termType);
+    setTermType(termTypeInput, termBlock);
     generateSchedule();
-
-    if (termType === 'work'){
-      const workTermDiv = document.createElement('work-term-text');
-      workTermDiv.innerText = "Work Term";
-      termBlock.appendChild(workTermDiv);
-    } else {
-      const workTermDiv = termBlock.querySelector('work-term-text');
-      workTermDiv.remove();
-    }
+    saveTermSettingsData();
   });
   const numCoursesInput = termBlock.querySelector("input[name='num-max-courses']");
   numCoursesInput.addEventListener("change", () => {
-    const courseNum = numCoursesInput.value;
-    termBlock.setAttribute('data-max-course-num', courseNum);
+    setTermNumCourses(numCoursesInput, termBlock);
     generateSchedule();
+    saveTermSettingsData();
   });
 
   // drag drop listeners
@@ -399,6 +404,22 @@ function addTermBlockListeners(termBlock){
     draggingScheduleBlock = null;
     draggingFromTerm = null;
   });
+}
+function setTermType(termTypeInput, termBlock){
+  const termType = termTypeInput.checked ? 'work' : 'study';
+  termBlock.setAttribute('data-term-type', termType);
+  if (termType === 'work'){
+    const workTermDiv = document.createElement('work-term-text');
+    workTermDiv.innerText = "Work Term";
+    termBlock.appendChild(workTermDiv);
+  } else {
+    const workTermDiv = termBlock.querySelector('work-term-text');
+    if (workTermDiv) workTermDiv.remove();
+  }
+}
+function setTermNumCourses(numCoursesInput, termBlock){
+  const courseNum = numCoursesInput.value;
+  termBlock.setAttribute('data-max-course-num', courseNum);
 }
 
 function closeAllTermSettings(){
@@ -556,7 +577,6 @@ function getSessionOfferings(courseBlock){
  * save all courses data to session/local storage
  */
 function saveScheduledCoursesData(){
-  console.log('saved')
   let scheduledCourses = [];
 
   document.querySelectorAll('.term-block').forEach(term => {
@@ -598,6 +618,31 @@ function getCourseSessionsData(){
   
   return courseSessions;
 }
+
+function saveTermSettingsData(){
+  let termSettings = [];
+
+  document.querySelectorAll('.term-block').forEach(termBlock => {
+    const termTypeInput = termBlock.querySelector('input[name="work-study"]');
+    const numCoursesInput = termBlock.querySelector("input[name='num-max-courses']");
+
+    termSettings.push({
+      'termTypeInputChecked': termTypeInput.checked,
+      'numCoursesInputVal': numCoursesInput.value
+    });
+  });
+
+  localStorage.setItem('termSettings', JSON.stringify(termSettings) );
+}
+function getTermSettingsData(){
+  let termSettings = localStorage.getItem('termSettings');
+  if (termSettings !== null) termSettings = JSON.parse(termSettings);
+  else termSettings = [];
+  
+  return termSettings;
+}
+
+
 
 /**
  * capitalize first letter of a string
