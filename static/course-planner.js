@@ -156,12 +156,13 @@ function generateSchedule(){
     const termType = term.getAttribute("data-term-type");
     if ( termType === "work" ) return;
 
-    let completedCourses = getCompletedCourses(term, "completed");
-    let curTermCourses = getCompletedCourses(term, "concurrent");
+    let completedCourses = getCompletedCourses(term);
+    let curTermCourses = getConcurrentCourses(term);
     
     const maxCourseNum = parseInt( term.getAttribute("data-max-course-num") );
     const termSession = term.getAttribute("data-term-session");
     
+    console.log(curTermCourses);
     // console.log(completedCourses);
     // console.log(term);
     // console.log(all_scheduleBlocks.length);
@@ -192,22 +193,28 @@ function generateSchedule(){
   });
 }
 
-function getCompletedCourses(term, which="completed"){
-  let completedCourses = []
+function getCompletedCourses(term){
+  let completedCourses = [];
+  
   document.querySelectorAll('.term-block .schedule-block').forEach(scheduleBlock => {
     const scheduleBlock_TermNum = parseInt(scheduleBlock.parentElement.dataset.termNum);
     const curTermNum =  parseInt(term.dataset.termNum);
 
-    if (which === "completed" &&  scheduleBlock_TermNum < curTermNum ){
+    if (scheduleBlock_TermNum < curTermNum ){
       completedCourses.push(scheduleBlock.courseData.course_name);
     }
-    else if (which === "concurrent" &&  scheduleBlock_TermNum == curTermNum ){
-      completedCourses.push(scheduleBlock.courseData.course_name);
-    }
-
   });
   addAssumeCompleted(completedCourses);
   return completedCourses;
+}
+function getConcurrentCourses(term){
+  let concurrentCourses = [];
+
+  term.querySelectorAll('.schedule-block').forEach(scheduleBlock => {
+    concurrentCourses.push(scheduleBlock.courseData.course_name);
+  });
+  addAssumeCompleted(concurrentCourses);
+  return concurrentCourses;
 }
 
 function addToTerm(scheduleBlock, term){
