@@ -153,6 +153,9 @@ function generateSchedule(){
   const all_terms = document.querySelectorAll(".term-block");
 
   all_terms.forEach(term => {
+    const termType = term.getAttribute("data-term-type");
+    if ( termType === "work" ) return;
+
     let completedCourses = getCompletedCourses(term, "completed");
     let curTermCourses = getCompletedCourses(term, "concurrent");
     
@@ -230,11 +233,17 @@ export function createScheduleBlock(courseData, sessionOfferings){ // export for
 function addScheduleBlockListeners(scheduleBlock){
   scheduleBlock.addEventListener("click", () => {
     console.log("clicked schedule block");
+    // click to find and scroll to course in left panel
   });
   scheduleBlock.addEventListener("dragstart", (e) => {
     console.log('drag start');
-    draggingFromTerm = e.target.parentElement;
-    draggingScheduleBlock = e.target;
+    const dragged = e.target;
+    if (!dragged.classList.contains("schedule-block")) return;
+
+    draggingFromTerm = dragged.parentElement;
+    draggingScheduleBlock = dragged;
+
+    // highlight all avaliable session offerings
   });
 
 }
@@ -306,19 +315,41 @@ function createTermBlock(num_termBlocks = 1){
 
 function setTermBlockData(termBlock){
   const termNumber = parseInt(document.querySelectorAll('.term-block').length);
+  termBlock.setAttribute('data-term-num', termNumber)
   
   const termSessions = ['fall', 'spring', 'summer'];
   const termSession = termSessions[termNumber % 3]; // mod returns 0, 1, 2, (term 1 returns 1, term 3 returns 0, so summer term is 0th index)
   termBlock.setAttribute('data-term-session', termSession);
   termBlock.setAttribute('data-year', parseInt(termNumber/3) + 1); // truncate num plus 1 returns term year given amount of terms
 
-  termBlock.setAttribute('data-term-type', 'study');
-  termBlock.setAttribute('data-max-course-num', '6');
-  termBlock.setAttribute('data-term-num', termNumber)
+  const termType = termBlock.querySelector('input[name="work-study"]').checked ? 'work' : 'study';
+  termBlock.setAttribute('data-term-type', termType);
+  const courseNum = termBlock.querySelector("input[name='num-max-courses']").value;
+  termBlock.setAttribute('data-max-course-num', courseNum);
 }
 
 function addTermBlockListeners(termBlock){
+  // open settings listener
+  const open = termBlock.querySelector('.open-settings-btn')
+  open.addEventListener('click', () => {
+    closeAllTermSettings();
+    const settings = termBlock.querySelector('.settings-container');
+    settings.classList.remove('hidden-none');
+  });
+
+  // settings listeners
+  termBlock.querySelectorAll("input").forEach(input =>{
+    input.addEventListener('change', () => {
+      const termType = termBlock.querySelector('input[name="work-study"]').checked ? 'work' : 'study';
+      termBlock.setAttribute('data-term-type', termType);
+      const courseNum = termBlock.querySelector("input[name='num-max-courses']").value;
+      termBlock.setAttribute('data-max-course-num', courseNum);
+      generateSchedule();
+    });
+  });
+
   // drag drop listeners
+  // TODO - if dragged enter dragging schedule block is not null, highlight term
   termBlock.addEventListener('dragenter', e => {
     console.log('hi');
   });
@@ -331,20 +362,29 @@ function addTermBlockListeners(termBlock){
     e.preventDefault();
   });
   termBlock.addEventListener('drop', e => {
+    e.preventDefault();
     console.log(draggingFromTerm,termBlock )
 
     // conditions must be - meets pre reqs and has enough space,
     // if not enough space, place and generate schedule again
+    if (draggingScheduleBlock === null) return;
+    if (draggingFromTerm === termBlock) return;
+  
+    termBlock.appendChild(draggingScheduleBlock);
+    draggingScheduleBlock.classList.add("force-schedule")
+    console.log('dropped');
+    saveScheduledCoursesData();
+    generateSchedule();
 
-    if (draggingFromTerm != termBlock){
-      termBlock.appendChild(draggingScheduleBlock);
-      draggingScheduleBlock.classList.add("force-schedule")
-      console.log('dropped');
-      saveScheduledCoursesData();
-      generateSchedule();
-    }
     draggingScheduleBlock = null;
     draggingFromTerm = null;
+  });
+}
+
+function closeAllTermSettings(){
+  const all_settings = document.querySelectorAll('.term-block .settings-container');
+  all_settings.forEach(container => {
+    container.classList.add('hidden-none');
   });
 }
 
@@ -546,3 +586,25 @@ function getCourseSessionsData(){
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
+
+
+
+window.addEventListener('click', e => {
+  const clicked = e.target;
+  if (!clicked.closest(".settings-container") && !clicked.closest(".open-settings-btn")){
+    closeAllTermSettings();
+  }
+});
+
+
+// drag into window to remove force schedule
+window.addEventListener('dragover', e => {
+  e.preventDefault();
+})
+window.addEventListener('drop', e => {
+  e.preventDefault();
+  if (draggingScheduleBlock === null) return;
+
+  draggingScheduleBlock.classList.remove('force-schedule');
+  generateSchedule();
+})
