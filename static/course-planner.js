@@ -332,20 +332,33 @@ function addTermBlockListeners(termBlock){
   // open settings listener
   const open = termBlock.querySelector('.open-settings-btn')
   open.addEventListener('click', () => {
-    closeAllTermSettings();
     const settings = termBlock.querySelector('.settings-container');
-    settings.classList.remove('hidden-none');
+    const force = settings.classList.contains('hidden-none');
+    closeAllTermSettings();
+    settings.classList.toggle('hidden-none', !force);
   });
 
   // settings listeners
-  termBlock.querySelectorAll("input").forEach(input =>{
-    input.addEventListener('change', () => {
-      const termType = termBlock.querySelector('input[name="work-study"]').checked ? 'work' : 'study';
-      termBlock.setAttribute('data-term-type', termType);
-      const courseNum = termBlock.querySelector("input[name='num-max-courses']").value;
-      termBlock.setAttribute('data-max-course-num', courseNum);
-      generateSchedule();
-    });
+  const termTypeInput = termBlock.querySelector('input[name="work-study"]');
+  termTypeInput.addEventListener("change", () => {
+    const termType = termTypeInput.checked ? 'work' : 'study';
+    termBlock.setAttribute('data-term-type', termType);
+    generateSchedule();
+
+    if (termType === 'work'){
+      const workTermDiv = document.createElement('work-term-text');
+      workTermDiv.innerText = "Work Term";
+      termBlock.appendChild(workTermDiv);
+    } else {
+      const workTermDiv = termBlock.querySelector('work-term-text');
+      workTermDiv.remove();
+    }
+  });
+  const numCoursesInput = termBlock.querySelector("input[name='num-max-courses']");
+  numCoursesInput.addEventListener("change", () => {
+    const courseNum = numCoursesInput.value;
+    termBlock.setAttribute('data-max-course-num', courseNum);
+    generateSchedule();
   });
 
   // drag drop listeners
